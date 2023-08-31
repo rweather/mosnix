@@ -22,6 +22,10 @@ MEMORY {
 PROVIDE(irq = _irq_default);
 PROVIDE(nmi = _irq_default);
 
+/* Tell the kernel where its usable user space RAM lies */
+user_space_ram_start = 0x1000;
+user_space_ram_end = 0x4000;
+
 SECTIONS {
   .text : {
        INCLUDE text-sections.ld

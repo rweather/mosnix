@@ -12,7 +12,8 @@
 # Processes
 #
 20  |getpid         |pid_t      |void
-21  |_exit          |void       |int status
+21  |getppid        |pid_t      |void
+22  |_exit          |void       |int status
 #
 # Identification
 #

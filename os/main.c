@@ -6,12 +6,18 @@
  * information.
  */
 
+#include <mosnix/proc.h>
 #include <mosnix/syscall.h>
 #include <stdio.h>
 
 int main(void)
 {
-    printf("MOSnix " MOSNIX_VERSION "\n");
+    /* Print a welcome banner */
+    puts("MOSnix " MOSNIX_VERSION);
+
+    /* Initialize all kernel subsystems */
+    proc_init();
+
     /* TODO */
     return 0;
 }

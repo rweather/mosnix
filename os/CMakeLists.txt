@@ -6,7 +6,7 @@ set(KERNEL_SOURCES
     ident.c
     main.c
     notimp.c
-    process.c
+    proc.c
 )
 
 # Build a kernel for "mos-sim" from the "llvm-mos" project.

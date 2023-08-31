@@ -72,7 +72,8 @@ struct sys_setegid_s {
 /*   3 */ extern int sys_close(struct sys_close_s *args);
 /*   4 */ extern int sys_lseek(struct sys_lseek_s *args);
 /*  20 */ extern int sys_getpid(void);
-/*  21 */ extern void sys_exit(struct sys_exit_s *args);
+/*  21 */ extern int sys_getppid(void);
+/*  22 */ extern void sys_exit(struct sys_exit_s *args);
 /*  30 */ extern int sys_getuid(void);
 /*  31 */ extern int sys_geteuid(void);
 /*  32 */ extern int sys_setuid(struct sys_setuid_s *args);

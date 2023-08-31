@@ -8,9 +8,12 @@ int __chrin_no_wait(void);
 void __chrout(char c);
 
 void __putchar(char c) {
-  if (__builtin_expect(c == '\n', 0))
+  if (__builtin_expect(c == '\n', 0)) {
     __chrout('\r');
-  __chrout(c);
+    __chrout('\n');
+  } else {
+    __chrout(c);
+  }
 }
 
 int getchar(void) {

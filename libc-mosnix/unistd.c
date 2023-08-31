@@ -45,6 +45,11 @@ pid_t getpid(void)
     return syscall(SYS_getpid);
 }
 
+pid_t getppid(void)
+{
+    return syscall(SYS_getppid);
+}
+
 void _exit(int status)
 {
     syscall(SYS_exit, status);
