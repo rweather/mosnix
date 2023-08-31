@@ -1,0 +1,26 @@
+#
+# Filesystem
+#
+#Nr |Name           |Return     |Argument Types and Names
+#
+0   |read           |ssize_t    |int fd|void *data|size_t size
+1   |write          |ssize_t    |int fd|const void *data|size_t size
+2   |open           |int        |const char *filename|int flags|int mode
+3   |close          |int        |int fd
+4   |lseek          |off_t      |int fd|off_t offset|int whence|>off_t *result
+#
+# Processes
+#
+20  |getpid         |pid_t      |void
+21  |_exit          |void       |int status
+#
+# Identification
+#
+30  |getuid         |uid_t      |void
+31  |geteuid        |uid_t      |void
+32  |setuid         |int        |uid_t uid
+33  |seteuid        |int        |uid_t uid
+34  |getgid         |gid_t      |void
+35  |getegid        |gid_t      |void
+36  |setgid         |int        |gid_t uid
+37  |setegid        |int        |gid_t uid

@@ -1,0 +1,160 @@
+/*
+ * Copyright (C) 2023 Southern Storm Software, Pty Ltd.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+/**
+\file syscalls.dox
+\page syscalls System call interface for MOSnix
+
+The general approach of the system call interface of MOSnix is to let the
+[llvm-mos C calling conventions](https://llvm-mos.org/wiki/C_calling_convention)
+do most of the heavy lifting.
+
+The llvm-mos compiler uses 32 <i>imaginary registers</i>
+<tt>rc0</tt> ... <tt>rc31</tt> to pass parameters to functions,
+return results, and store local variables.  If the compiler runs out of
+imaginary registers, then it will pass extra parameters on the C stack
+(which is not the same as the 6502's return address stack).
+
+The first parameter to a function is usually passed in the A:X register
+pair.  The top of stack is pointed to by the register pair <tt>rc0:rc1</tt>
+
+The kernel and the user space processes each have their own separate
+copy of the imaginary registers and the stack.  A method is needed to
+pass values back and forth across the system call boundary without
+imposing too much overhead.
+
+The <tt>syscall()</tt> function in <tt>&lt;sys/syscall.h&gt;</tt>
+has the following prototype:
+
+\code
+int syscall(unsigned char number, ...);
+\endcode
+
+The llvm-mos C calling conventions will arrange for all of the arguments
+in the ellipsis <tt>...</tt> to be passed on the C stack.  The top of C
+stack is pointed to by the imaginary register pair <tt>rc0:rc1</tt>
+and the system call number will be in the A register.
+
+The <tt>syscall()</tt> function is used as follows to define system call
+wrapper functions:
+
+\code
+ssize_t read(int fd, void *data, size_t size)
+{
+    return syscall(SYS_read, fd, data, size);
+}
+\endcode
+
+Behind the scenes, llvm-mos arranges to set A to <tt>SYS_read</tt> and to
+place the arguments on the C stack.  The <tt>syscall()</tt> function then
+performs the following pseudocode to call into the kernel:
+
+\verbatim
+func = SYSCALL[A]
+A:X = rc0:rc1
+A:X = func(A:X)
+if (A:X < 0) {
+    errno = -A:X
+    return -1
+} else {
+    return A:X
+}
+\endverbatim
+
+The pointer to the kernel's system call entry point is loaded from
+the <tt>SYSCALL</tt> table.  Then <tt>rc0:rc1</tt> is transferred to A:X
+so that it can be passed to the kernel system call as a pointer to a
+<tt>struct</tt> containing the parameters.  Inside the kernel, the
+system call is implemented as follows:
+
+\code
+struct sys_read_s {
+    int fd;
+    void *data;
+    size_t size;
+};
+
+int sys_read(struct sys_read_s *args)
+{
+    ...
+}
+\endcode
+
+The kernel can use its own imaginary registers and C stack to implement
+the system call.  The llvm-mos handling of variadic functions has already
+packed the values into a <tt>struct</tt> for the system call.  The only thing
+that is shared is the 6502's return address stack.
+
+System calls that return results greater than 16 bits in size must
+pass a pointer to a return variable to the kernel.  For example:
+
+\code
+off_t lseek(int fd, off_t offset, int whence)
+{
+    off_t result;
+    if (syscall(SYS_lseek, fd, offset, whence, &result) == 0)
+        return result;
+    else
+        return -1;
+}
+\endcode
+
+As indicated above, <tt>SYSCALL</tt> points to a table of kernel functions
+that implement each of the system calls.  This symbol is resolved by
+the program loader to point at the kernel's actual table at runtime.
+Due to how <tt>syscall()</tt> works, the maximum supported system call
+number is 127.
+
+Unused entries in the table are padded with calls to <tt>sys_notimp()</tt>:
+
+\code
+int sys_notimp(void)
+{
+    return -ENOSYS;
+}
+\endcode
+
+This means that every system call number between 0 and 127 will have a
+valid behaviour, even if that behaviour is "not supported".
+System call numbers greater than 127 will be AND'ed with 127 and the
+truncated system call number will be used instead.
+
+The <tt>syscall()</tt> function imposes about 45 clock cycles of overhead
+for a successful system call and about 72 clock cycles of overhead
+for a system call that results in an error.  There will be additional
+overhead for llvm-mos to pack the arguments onto the C stack,
+compared with a plain function call.
+
+If the system call does not have any parameters or errno results,
+such as <tt>getpid()</tt>, then it is possible to short-circuit the
+process and jump directly to the address in the <tt>SYSCALL</tt> table:
+
+\code
+.global getpid
+.section .text.getpid,"ax",@progbits
+getpid:
+  jmp (SYSCALL+SYS_getpid*2)
+\endcode
+
+Usually this optimization isn't worth the effort.
+
+*/
