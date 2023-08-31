@@ -2,9 +2,11 @@
 # List of source files for the kernel.
 set(KERNEL_SOURCES
     dispatch.c
+    fd.c
     ident.c
     main.c
     notimp.c
+    process.c
 )
 
 # Build a kernel for "mos-sim" from the "llvm-mos" project.
