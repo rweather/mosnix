@@ -25,12 +25,12 @@
 
 /* For now, everyone is root.  Please Unix responsibly! */
 
-static id_t sys_getid(void)
+static int sys_getid(void)
 {
     return 0;
 }
 
-static int sys_setid(id_t uid)
+static int sys_setid(id_t id)
 {
     if (id != 0)
         return -EINVAL;
@@ -38,42 +38,42 @@ static int sys_setid(id_t uid)
         return 0;
 }
 
-uid_t sys_getuid(void)
+int sys_getuid(void)
 {
     return sys_getid();
 }
 
-uid_t sys_geteuid(void)
+int sys_geteuid(void)
 {
     return sys_getid();
 }
 
-int sys_setuid(uid_t uid)
+int sys_setuid(struct sys_setuid_s *args)
 {
-    return sys_setid(uid);
+    return sys_setid(args->uid);
 }
 
-int sys_seteuid(uid_t uid)
+int sys_seteuid(struct sys_seteuid_s *args)
 {
-    return sys_setid(uid);
+    return sys_setid(args->uid);
 }
 
-gid_t sys_getgid(void)
+int sys_getgid(void)
 {
     return sys_getid();
 }
 
-gid_t sys_getegid(void)
+int sys_getegid(void)
 {
     return sys_getid();
 }
 
-int sys_setgid(gid_t gid)
+int sys_setgid(struct sys_setgid_s *args)
 {
-    return sys_setid(gid);
+    return sys_setid(args->gid);
 }
 
-int sys_setegid(gid_t gid)
+int sys_setegid(struct sys_setegid_s *args)
 {
-    return sys_setid(gid);
+    return sys_setid(args->gid);
 }

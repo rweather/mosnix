@@ -42,7 +42,7 @@ typedef unsigned long long u_quad_t;
 typedef unsigned long long blkcnt_t;
 typedef unsigned int blksize_t;
 typedef char *caddr_t;
-typedef long long clock_t;
+typedef unsigned long clock_t;
 typedef long daddr_t;
 typedef unsigned int dev_t;
 typedef unsigned int gid_t;
@@ -58,6 +58,7 @@ typedef unsigned long sigset_t;
 typedef int ssize_t;
 typedef long suseconds_t;
 typedef long long time_t;
+typedef unsigned int uid_t;
 typedef unsigned long useconds_t;
 
 #ifdef __cplusplus

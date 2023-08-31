@@ -20,8 +20,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef MOSNIX_BITS_UNISTD_H
-#define MOSNIX_BITS_UNISTD_H
+#ifndef MOSNIX_TARGET_EATER_H
+#define MOSNIX_TARGET_EATER_H
 
 #include <sys/types.h>
 
@@ -29,23 +29,9 @@
 extern "C" {
 #endif
 
-/* Generated automatically */
+#define SYS_CLOCKS_PER_SEC 1000UL
 
-extern ssize_t read(int fd, void *data, size_t size);
-extern ssize_t write(int fd, const void *data, size_t size);
-extern int open(const char *filename, int flags, int mode);
-extern int close(int fd);
-extern off_t lseek(int fd, off_t offset, int whence);
-extern pid_t getpid(void);
-extern void _exit(int status);
-extern uid_t getuid(void);
-extern uid_t geteuid(void);
-extern int setuid(uid_t uid);
-extern int seteuid(uid_t uid);
-extern gid_t getgid(void);
-extern gid_t getegid(void);
-extern int setgid(gid_t gid);
-extern int setegid(gid_t gid);
+extern clock_t sys_clock(void);
 
 #ifdef __cplusplus
 }

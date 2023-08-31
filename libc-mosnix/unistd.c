@@ -94,13 +94,13 @@ gid_t getegid(void)
     return syscall(SYS_getegid);
 }
 
-int setgid(gid_t uid)
+int setgid(gid_t gid)
 {
-    return syscall(SYS_setgid, uid);
+    return syscall(SYS_setgid, gid);
 }
 
-int setegid(gid_t uid)
+int setegid(gid_t gid)
 {
-    return syscall(SYS_setegid, uid);
+    return syscall(SYS_setegid, gid);
 }
 

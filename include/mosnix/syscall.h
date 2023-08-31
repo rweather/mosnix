@@ -73,11 +73,11 @@ struct sys_seteuid_s {
 };
 
 struct sys_setgid_s {
-    gid_t uid;
+    gid_t gid;
 };
 
 struct sys_setegid_s {
-    gid_t uid;
+    gid_t gid;
 };
 
 /*   0 */ extern int sys_read(struct sys_read_s *args);

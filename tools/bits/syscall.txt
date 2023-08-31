@@ -22,5 +22,5 @@
 33  |seteuid        |int        |uid_t uid
 34  |getgid         |gid_t      |void
 35  |getegid        |gid_t      |void
-36  |setgid         |int        |gid_t uid
-37  |setegid        |int        |gid_t uid
+36  |setgid         |int        |gid_t gid
+37  |setegid        |int        |gid_t gid
