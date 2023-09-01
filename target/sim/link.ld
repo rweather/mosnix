@@ -13,7 +13,7 @@ ASSERT(__rc31 == 0x001f, "Inconsistent zero page map.")
 MEMORY {
     /* Kernel can use 0x00 to 0x3f in the zero page, but no more.
      * The rest of the zero page is reserved for user space programs. */
-    zp : ORIGIN = __rc31 + 1, LENGTH = 0x0020
+    zp : ORIGIN = __rc31 + 1, LENGTH = 0x20
 
     /* Put the kernel and its runtime data in the top half of memory.
      * User space programs will be loaded to the bottom half of memory. */

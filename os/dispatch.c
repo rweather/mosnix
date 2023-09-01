@@ -10,7 +10,7 @@
 
 /* Generated automatically */
 
-void * const SYSCALL[128] __attribute__((retain)) = {
+void * const SYSCALL_TABLE[128] __attribute__((retain)) = {
     /*   0 */ (void *)sys_read,
     /*   1 */ (void *)sys_write,
     /*   2 */ (void *)sys_open,

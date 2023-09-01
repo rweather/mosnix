@@ -55,9 +55,9 @@ place the arguments on the C stack.  The <tt>syscall()</tt> function then
 performs the following pseudocode to call into the kernel:
 
 \verbatim
-func = SYSCALL[A]
+Y = A * 2
 A:X = rc0:rc1
-A:X = func(A:X)
+jsr SYSCALL
 if (A:X < 0) {
     errno = -A:X
     return -1
@@ -66,11 +66,19 @@ if (A:X < 0) {
 }
 \endverbatim
 
-The pointer to the kernel's system call entry point is loaded from
-the <tt>SYSCALL</tt> table.  Then <tt>rc0:rc1</tt> is transferred to A:X
+The system call number is doubled and copied into Y.  The doubling helps the
+kernel by making Y an offset into the system call dispatch table.  If we
+leave this to later, then more register juggling is required inside the kernel.
+It is easier to make the user space application do the doubling.
+
+The top of stack pointer in <tt>rc0:rc1</tt> is transferred to A:X
 so that it can be passed to the kernel system call as a pointer to a
-<tt>struct</tt> containing the parameters.  Inside the kernel, the
-system call is implemented as follows:
+<tt>struct</tt> containing the parameters.
+
+The <tt>SYSCALL</tt> symbol is exported by the kernel to allow user
+applications to figure out where the dispatcher is located.
+
+Inside the kernel, the system call is implemented as follows:
 
 \code
 struct sys_read_s {
@@ -103,44 +111,5 @@ off_t lseek(int fd, off_t offset, int whence)
         return -1;
 }
 \endcode
-
-As indicated above, <tt>SYSCALL</tt> points to a table of kernel functions
-that implement each of the system calls.  This symbol is resolved by
-the program loader to point at the kernel's actual table at runtime.
-Due to how <tt>syscall()</tt> works, the maximum supported system call
-number is 127.
-
-Unused entries in the table are padded with calls to <tt>sys_notimp()</tt>:
-
-\code
-int sys_notimp(void)
-{
-    return -ENOSYS;
-}
-\endcode
-
-This means that every system call number between 0 and 127 will have a
-valid behaviour, even if that behaviour is "not supported".
-System call numbers greater than 127 will be AND'ed with 127 and the
-truncated system call number will be used instead.
-
-The <tt>syscall()</tt> function imposes about 45 clock cycles of overhead
-for a successful system call and about 72 clock cycles of overhead
-for a system call that results in an error.  There will be additional
-overhead for llvm-mos to pack the arguments onto the C stack,
-compared with a plain function call.
-
-If the system call does not have any parameters or errno results,
-such as <tt>getpid()</tt>, then it is possible to short-circuit the
-process and jump directly to the address in the <tt>SYSCALL</tt> table:
-
-\code
-.global getpid
-.section .text.getpid,"ax",@progbits
-getpid:
-  jmp (SYSCALL+SYS_getpid*2)
-\endcode
-
-Usually this optimization isn't worth the effort.
 
 */

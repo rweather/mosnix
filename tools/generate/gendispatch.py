@@ -14,7 +14,7 @@ gentools.print_header("", cplusplus=False, include=['<mosnix/syscall.h>'])
 
 print("/* Generated automatically */")
 print("")
-print("void * const SYSCALL[128] __attribute__((retain)) = {")
+print("void * const SYSCALL_TABLE[128] __attribute__((retain)) = {")
 
 next_syscall = 0
 

@@ -79,33 +79,50 @@ enum ATTR_ENUM_PACKED proc_state
 #define PROC_STACK_SIZE 64
 
 /**
- * @brief Saved process state to support context switching.
+ * @brief Structure of registers that are saved on the stack for
+ * system calls and context switching.
+ *
+ * On systems with 65c02 instructions, we arrange for A/X to be in
+ * that order on the stack to make it easier to access as a word.
  */
-struct proc_context
+struct proc_stack_frame
 {
-    /** Accumulator */
-    uint8_t A;
+#if defined(CPU_65C02)
+    /** A/X register pair */
+    uint16_t AX;
+
+    /** Y index register */
+    uint8_t Y;
+#else
+    /** Y index register */
+    uint8_t Y;
 
     /** X index register */
     uint8_t X;
 
-    /** Y index register */
-    uint8_t Y;
+    /** Accumulator */
+    uint8_t A;
+#endif
 
     /** Processor status register */
     uint8_t P;
 
+    /** Return address to the calling function */
+    uint16_t return_address;
+};
+
+/**
+ * @brief Saved process state to support context switching.
+ */
+struct proc_context
+{
     /** Stack pointer */
     uint8_t S;
 
-    /** Address in the zero page to where zp has been "swapped in".
-     *  Set to zero if zp is currently "swapped out". */
-    uint8_t zp_in;
+    /** Address in the zero page of the process's registers. */
+    uint8_t *zp;
 
-    /** Saved zero page values when they are "swapped out" */
-    uint8_t zp[PROC_ZP_SIZE];
-
-    /** Saved locations from the 6502 stack */
+    /** Saved locations from the 6502 stack when context-switching */
     uint8_t stack[PROC_STACK_SIZE];
 };
 
@@ -114,15 +131,15 @@ struct proc_context
  */
 struct proc
 {
+    /** Saved context information for the process */
+    struct proc_context context;
+
     /** Parent process identifier, or PID_UNUSED if this process
      *  does not have a parent. */
     pid_small_t ppid;
 
     /** Current process state */
     enum proc_state state;
-
-    /** Saved context information for the process */
-    struct proc_context context;
 
     /** Arguments to the process, formatted as an array of strings. */
     char args[CONFIG_ARG_MAX];
@@ -142,6 +159,12 @@ typedef int (*proc_internal_func_t)(int argc, char **argv);
  * @brief Reference to the current process that is running.
  */
 extern struct proc * volatile current_proc;
+
+/**
+ * @brief Non-zero if we are in the kernel and pre-emption should be
+ * blocked until we are ready to return to user space.
+ */
+extern uint8_t volatile in_kernel;
 
 /**
  * @brief Initializes the process subsystem of the kernel.

@@ -69,6 +69,6 @@ sys_clock:
   cli
   rts
 
-.section .zp.bss,"zaw",@nobits
+.section .bss,"aw",@nobits
 __systick_value:
   .fill 4

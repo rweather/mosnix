@@ -13,9 +13,12 @@
 
 /**
  * @brief Maximum number of processes in the global process table.
+ *
+ * Each process gets 32 zero page locations and 64 are reserved for the kernel.
+ * This means that there is a maximum of 6 processes possible.
  */
 #ifndef CONFIG_PROC_MAX
-#define CONFIG_PROC_MAX 8
+#define CONFIG_PROC_MAX 6
 #endif
 
 /**
