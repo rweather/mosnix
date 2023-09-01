@@ -53,6 +53,7 @@ pid_t getppid(void)
 void _exit(int status)
 {
     syscall(SYS_exit, status);
+    while (1) ; /* stop compiler complaining about reachable unreachable code */
 }
 
 uid_t getuid(void)

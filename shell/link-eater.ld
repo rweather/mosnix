@@ -1,33 +1,20 @@
-/* Linker script for Ben Eater's 6502 breadboard computer. */
+/* Shell linker script for Ben Eater's 6502 breadboard computer. */
 
 /* Provide imaginary (zero page) registers. */
-__rc0 = 0x00;
+__rc0 = 0x40;
 INCLUDE imag-regs.ld
-ASSERT(__rc31 == 0x1f, "Inconsistent zero page map.")
+ASSERT(__rc31 == 0x5f, "Inconsistent zero page map.")
 
 MEMORY {
-  /* Kernel can use 0x00 to 0x3f in the zero page, but no more.
-   * The rest of the zero page is reserved for user space programs. */
-  zp : ORIGIN = __rc31 + 1, LENGTH = 0x20
+  /* Shell can use 0x40 to 0x5f in the zero page, but no more */
+  zp : ORIGIN = __rc31 + 1, LENGTH = 0
 
-  /* First 4K of memory is reserved for the kernel.  The rest is
-   * used by user space applications. */
-  ram : ORIGIN = 0x200, LENGTH = 0x1000 - 0x200
+  /* Arrange to put shell's data in RAM starting at 0x3800 */
+  ram : ORIGIN = 0x3800, LENGTH = 0x800
 
-  /* Put the kernel's code into ROM */
-  rom : ORIGIN = 0xa000, LENGTH = 0x5ffa
+  /* Put the shell's code into ROM */
+  rom : ORIGIN = 0x8000, LENGTH = 0x2000
 }
-
-/* Provide default IRQ and NMI handlers if the program doesn't have them. */
-PROVIDE(irq = _irq_default);
-PROVIDE(nmi = _irq_default);
-
-/* Tell the kernel where its usable user space RAM lies */
-user_space_ram_start = 0x1000;
-user_space_ram_end = 0x3800;
-
-/* Tell the kernel where the in-ROM shell code lies */
-shell_start = 0x8000;
 
 SECTIONS {
   .text : {
@@ -55,7 +42,4 @@ __stack = ORIGIN(ram) + LENGTH(ram);
 
 OUTPUT_FORMAT {
   FULL(rom)
-  SHORT(nmi)
-  SHORT(_start)
-  SHORT(_irqbrk)
 }

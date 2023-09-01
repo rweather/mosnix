@@ -113,9 +113,11 @@ void proc_kill(struct proc *proc)
 static void proc_push_return_stack(struct proc *p, uintptr_t value)
 {
     uint8_t S = p->context.S - 2;
-    --value; /* Return addresses are -1 from the true address */
-    p->context.stack[S]     = (uint8_t)value;
-    p->context.stack[S + 1] = (uint8_t)(value >> 8);
+    /* Return addresses are -1 from the true address */
+    --value;
+    /* S points to one below the top of stack, not the top of stack */
+    p->context.stack[S + 1] = (uint8_t)value;
+    p->context.stack[S + 2] = (uint8_t)(value >> 8);
     p->context.S = S;
 }
 
@@ -123,7 +125,7 @@ static inline void proc_push_stack_frame(struct proc *p, uint16_t value)
 {
     uint8_t S = p->context.S - sizeof(struct proc_stack_frame);
     struct proc_stack_frame *frame =
-        (struct proc_stack_frame *)(p->context.stack + S);
+        (struct proc_stack_frame *)(p->context.stack + S + 1);
     frame->A = (uint8_t)value;
     frame->X = (uint8_t)(value >> 8);
     p->context.S = S;
@@ -155,7 +157,7 @@ int proc_start_internal
     /* Configure the new process so that it will jump to "func"
      * when it starts executing.  If "func" returns, then arrange
      * to perform an "_exit" system call. */
-    p->context.S = PROC_STACK_SIZE;
+    p->context.S = PROC_STACK_SIZE - 1;
     proc_push_return_stack(p, (uintptr_t)proc_exit);
     proc_push_return_stack(p, (uintptr_t)func);
     proc_push_stack_frame(p, *((uint16_t *)(p->args)));   /* argc */

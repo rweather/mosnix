@@ -27,7 +27,7 @@ _irqbrk:
   pha
   cld                   ; Just in case.
   tsx
-  lda $0102,x           ; Was this due to a BRK instruction?
+  lda $0103,x           ; Was this due to a BRK instruction?
   and #$10
   beq .Lno_break
   tya                   ; Also save Y on the stack.

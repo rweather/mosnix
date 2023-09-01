@@ -19,6 +19,7 @@ set(CMAKE_C_FLAGS_RELEASE "-Os")
 
 # We need the llvm-mos tools to cross-compile the kernel and user space.
 find_program(MOS_CLANG NAMES mos-common-clang REQUIRED)
+find_program(LLVM_MOS_LINKER NAMES ld.lld REQUIRED)
 find_program(LLVM_AR NAMES llvm-ar REQUIRED)
 find_program(LLVM_RANLIB NAMES llvm-ranlib REQUIRED)
 find_program(MOS_SIM NAMES mos-sim REQUIRED)
@@ -40,7 +41,8 @@ include_directories(include)
 # Add the subdirectories.
 add_subdirectory(include)
 add_subdirectory(target)
-#add_subdirectory(libc-mosnix)
+add_subdirectory(libc-mosnix)
+add_subdirectory(shell)
 add_subdirectory(os)
 
 # "make boot" will boot the kernel with "mos-sim".

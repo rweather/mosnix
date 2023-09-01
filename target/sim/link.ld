@@ -15,9 +15,9 @@ MEMORY {
      * The rest of the zero page is reserved for user space programs. */
     zp : ORIGIN = __rc31 + 1, LENGTH = 0x20
 
-    /* Put the kernel and its runtime data in the top half of memory.
+    /* Put the kernel and its runtime data in the top part of memory.
      * User space programs will be loaded to the bottom half of memory. */
-    ram (rw) : ORIGIN = 0x8000, LENGTH = 0x7ff0
+    ram (rw) : ORIGIN = 0xa000, LENGTH = 0x5ff0
 }
 
 SECTIONS { INCLUDE c.ld }
@@ -29,9 +29,12 @@ __stack = 0xfff0;
 user_space_ram_start = 0x0200;
 user_space_ram_end = 0x8000;
 
+/* Tell the kernel where the shell code lies */
+shell_start = 0x8000;
+
 OUTPUT_FORMAT {
-    SHORT(0x8000)
-    SHORT(__data_end - 0x8000)
+    SHORT(0xa000)
+    SHORT(__data_end - 0xa000)
     TRIM(ram)
 
     SHORT(0xfffa)

@@ -133,6 +133,7 @@ swap_out_stack:
   clc
   adc #3
   tay
+  inx ; S points to 1 below the top of stack, so adjust for that.
 .Lswap_out_loop:
   cpx #PROC_STACK_SIZE
   bcs .Lswap_out_done
@@ -147,6 +148,9 @@ swap_out_stack:
 ;
 ; Swap in the user stack for the current process.
 ;
+; Everything from S up to PROC_STACK_SIZE is copied out of the
+; process block to the 6502 return stack at $0100.
+;
 .global swap_in_stack
 .section .text.swap_in_stack,"ax",@progbits
 swap_in_stack:
@@ -156,6 +160,7 @@ swap_in_stack:
   clc
   adc #3
   tay
+  inx ; S points to 1 below the top of stack, so adjust for that.
 .Lswap_in_loop:
   cpx #PROC_STACK_SIZE
   bcs .Lswap_in_done

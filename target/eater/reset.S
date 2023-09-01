@@ -26,7 +26,7 @@ _irqbrk:
   phx
   cld                   ; Just in case.
   tsx
-  lda $0102,x           ; Was this due to a BRK instruction?
+  lda $0103,x           ; Was this due to a BRK instruction?
   and #$10
   bne .Ldo_break
   jsr __systick_isr     ; Handle the system millisecond tick timer interrupt.
