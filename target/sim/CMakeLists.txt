@@ -1,2 +1,5 @@
 
-add_library(target-sim STATIC target.c)
+add_library(target-sim STATIC
+    reset.S
+    target.c
+)

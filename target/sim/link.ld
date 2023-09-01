@@ -38,5 +38,5 @@ OUTPUT_FORMAT {
     SHORT(6)
     SHORT(0)
     SHORT(_start)
-    SHORT(0)
+    SHORT(_irqbrk)
 }

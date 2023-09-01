@@ -22,25 +22,20 @@ __do_reset:
 .global _irqbrk
 .section .text._irqbrk,"axR",@progbits
 _irqbrk:
-  pha                   ; __systick_isr and __serial_isr use A and X.
-  phx
+  pha                   ; Save A and X on the stack.
+  txa
+  pha
   cld                   ; Just in case.
   tsx
   lda $0102,x           ; Was this due to a BRK instruction?
   and #$10
-  bne .Ldo_break
-  jsr __systick_isr     ; Handle the system millisecond tick timer interrupt.
-  jsr __serial_isr      ; Handle serial receive interrupts.
-  plx
-  pla
-  jmp irq               ; Jump to the user-supplied IRQ handler.
-.Ldo_break:
-  phy                   ; Also save Y on the stack.
+  beq .Lno_break
+  tya                   ; Also save Y on the stack.
+  pha
   cli                   ; Re-enable interrupts.
   jmp brk_syscall       ; Handle the system call.
-
-; Default IRQ and NMI handler if the user's program hasn't defined one.
-.global _irq_default
-.section .text._irq_default,"axR",@progbits
-_irq_default:
+.Lno_break:
+  pla
+  tax
+  pla
   rti

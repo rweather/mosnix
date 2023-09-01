@@ -37,28 +37,12 @@ run_scheduler:
   jmp .Lrun_scheduler_loop
 
 ;
-; System call dispatcher.
+; System call dispatcher.  This is called from the IRQBRK handler
+; whenever we encounter a BRK instruction.  BRK is our system call trap.
 ;
-.global SYSCALL
-.section .text.SYSCALL,"axR",@progbits
-SYSCALL:
-;
-; Save the incoming registers on the user stack.
-;
-#if defined(CPU_65C02)
-  php
-  phy
-  phx
-  pha
-#else /* !CPU_65C02 */
-  php
-  pha
-  txa
-  pha
-  tya
-  pha
-#endif /* !CPU_65C02 */
-
+.global brk_syscall
+.section .text.brk_syscall,"axR",@progbits
+brk_syscall:
 ;
 ; We are now in kernel space.  Block preemption.
 ;
@@ -122,19 +106,17 @@ SYSCALL:
 ; Restore the registers from the user stack and return to user space.
 ;
 #if defined(CPU_65C02)
-  pla
-  plx
   ply
-  plp
+  plx
+  pla
 #else /* !CPU_65C02 */
   pla
   tay
   pla
   tax
   pla
-  plp
 #endif /* !CPU_65C02 */
-  rts
+  rti
 
 ;
 ; Swap out the user stack for the current process.

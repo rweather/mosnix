@@ -81,19 +81,9 @@ enum ATTR_ENUM_PACKED proc_state
 /**
  * @brief Structure of registers that are saved on the stack for
  * system calls and context switching.
- *
- * On systems with 65c02 instructions, we arrange for A/X to be in
- * that order on the stack to make it easier to access as a word.
  */
 struct proc_stack_frame
 {
-#if defined(CPU_65C02)
-    /** A/X register pair */
-    uint16_t AX;
-
-    /** Y index register */
-    uint8_t Y;
-#else
     /** Y index register */
     uint8_t Y;
 
@@ -102,7 +92,6 @@ struct proc_stack_frame
 
     /** Accumulator */
     uint8_t A;
-#endif
 
     /** Processor status register */
     uint8_t P;

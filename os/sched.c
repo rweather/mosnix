@@ -35,12 +35,8 @@ void dispatch_syscall(void *arg, int (*handler)(void *arg))
     int result = (*handler)(arg);
     struct proc_stack_frame *frame =
         (struct proc_stack_frame *)(0x0100 + current_proc->context.S);
-#if defined(CPU_65C02)
-    frame->AX = (uint16_t)result;
-#else
     frame->A = (uint8_t)result;
     frame->X = (uint8_t)(result >> 8);
-#endif
 
     /* Find the next runnable process and switch to it */
     /* TODO */

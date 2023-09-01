@@ -124,12 +124,8 @@ static inline void proc_push_stack_frame(struct proc *p, uint16_t value)
     uint8_t S = p->context.S - sizeof(struct proc_stack_frame);
     struct proc_stack_frame *frame =
         (struct proc_stack_frame *)(p->context.stack + S);
-#if defined(CPU_65C02)
-    frame->AX = value;
-#else
     frame->A = (uint8_t)value;
     frame->X = (uint8_t)(value >> 8);
-#endif
     p->context.S = S;
 }
 

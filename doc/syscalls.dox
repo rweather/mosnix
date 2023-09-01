@@ -57,7 +57,7 @@ performs the following pseudocode to call into the kernel:
 \verbatim
 Y = A * 2
 A:X = rc0:rc1
-jsr SYSCALL
+BRK
 if (A:X < 0) {
     errno = -A:X
     return -1
@@ -75,8 +75,8 @@ The top of stack pointer in <tt>rc0:rc1</tt> is transferred to A:X
 so that it can be passed to the kernel system call as a pointer to a
 <tt>struct</tt> containing the parameters.
 
-The <tt>SYSCALL</tt> symbol is exported by the kernel to allow user
-applications to figure out where the dispatcher is located.
+The <tt>BRK</tt> instruction is used to execute a system call trap
+into the kernel.
 
 Inside the kernel, the system call is implemented as follows:
 
