@@ -16,6 +16,9 @@ MEMORY {
     ram (rw) : ORIGIN = 0x8000, LENGTH = 0x2000
 }
 
+REGION_ALIAS("c_readonly", ram)
+REGION_ALIAS("c_writeable", ram)
+
 SECTIONS { INCLUDE c.ld }
 
 __stack = ORIGIN(ram) + LENGTH(ram);

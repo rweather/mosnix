@@ -29,6 +29,7 @@ for line in lines:
             print("    return syscall(SYS_%s);" % name)
         else:
             print("    syscall(SYS_%s);" % name)
+            print("    while (1) ; /* stop compiler complaining about reachable unreachable code */")
         print("}")
     else:
         returnType = fields[2]
@@ -48,14 +49,15 @@ for line in lines:
         print("{")
         if len(returnName) > 0:
             print("    %s %s;" % (returnType, returnName))
-            print("    if (syscall(SYS_%s, %s, &%s) == 0)" % (name.replace('_',''), ", ".join(argNames), returnName))
+            print("    if (syscall(SYS_%s, %s, &%s) == 0)" % (re.sub(r'^_', '', name), ", ".join(argNames), returnName))
             print("        return %s;" % returnName)
             print("    else")
             print("        return -1;")
         elif returnType == 'void':
-            print("    syscall(SYS_%s, %s);" % (name.replace('_',''), ", ".join(argNames)))
+            print("    syscall(SYS_%s, %s);" % (re.sub(r'^_', '', name), ", ".join(argNames)))
+            print("    while (1) ; /* stop compiler complaining about reachable unreachable code */")
         else:
-            print("    return syscall(SYS_%s, %s);" % (name.replace('_',''), ", ".join(argNames)))
+            print("    return syscall(SYS_%s, %s);" % (re.sub(r'^_', '', name), ", ".join(argNames)))
         print("}")
     print("")
 

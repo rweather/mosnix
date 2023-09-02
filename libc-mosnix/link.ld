@@ -21,6 +21,9 @@ PHDRS {
 	init PT_LOAD;
 }
 
+REGION_ALIAS("c_readonly", ram)
+REGION_ALIAS("c_writeable", ram)
+
 SECTIONS {
 	.zp (NOLOAD) : {
 		/* Put the imaginary registers into the zeropage segment

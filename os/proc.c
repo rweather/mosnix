@@ -8,23 +8,31 @@
 
 #include <mosnix/attributes.h>
 #include <mosnix/proc.h>
+#include <mosnix/sched.h>
 #include <mosnix/syscall.h>
 #include <string.h>
+#include <stdlib.h>
 #include <errno.h>
 
 /** Process table for the kernel */
 static struct proc process_table[CONFIG_PROC_MAX] ATTR_SECTION_NOINIT;
 
-struct proc * volatile current_proc __attribute__((section(".zp")));
-uint8_t volatile in_kernel __attribute__((section(".zp")));
+/** List of unused process blocks */
+static struct run_queue unused_procs;
+
+struct proc * volatile current_proc ATTR_SECTION_ZP;
+uint8_t volatile in_kernel ATTR_SECTION_ZP;
 
 void proc_init(void)
 {
     struct proc *p;
     pid_small_t pid;
-    for (pid = 0, p = process_table; pid < CONFIG_PROC_MAX; ++pid, ++p) {
+    STAILQ_INIT(&unused_procs);
+    for (pid = 1, p = process_table; pid <= CONFIG_PROC_MAX; ++pid, ++p) {
+        p->pid = pid;
         p->ppid = PID_UNUSED;
         p->state = PROC_UNUSED;
+        STAILQ_INSERT_TAIL(&unused_procs, p, next);
     }
     current_proc = &(process_table[0]);
 }
@@ -79,42 +87,41 @@ static int proc_format_args(struct proc *proc, int argc, char **argv)
 int proc_create(pid_t ppid, int argc, char **argv, struct proc **proc)
 {
     struct proc *p;
-    pid_small_t pid;
     int err;
-    for (pid = 1, p = process_table; pid <= CONFIG_PROC_MAX; ++pid, ++p) {
-        if (p->state == PROC_UNUSED) {
-            /* Zero the entire process structure */
-            memset(p, 0, sizeof(struct proc));
-            p->ppid = ppid;
 
-            /* Format the argc/argv arguments into the process structure */
-            err = proc_format_args(p, argc, argv);
-            if (err != 0)
-                return err;
+    /* Find the next available unused process */
+    p = STAILQ_FIRST(&unused_procs);
+    if (!p)
+        return -ENOMEM;
+    STAILQ_REMOVE_HEAD(&unused_procs, next);
 
-            /* Allocate zero page memory to the process and clear it */
-            p->context.zp = (uint8_t *)(pid * PROC_ZP_SIZE);
-            memset(p->context.zp, 0, PROC_ZP_SIZE);
+    /* Zero the entire process structure */
+    memset(p, 0, sizeof(struct proc));
+    p->ppid = ppid;
 
-            /* Process block is ready to go */
-            *proc = p;
-            return 0;
-        }
-    }
-    return -ENOMEM;
+    /* Format the argc/argv arguments into the process structure */
+    err = proc_format_args(p, argc, argv);
+    if (err != 0)
+        return err;
+
+    /* Allocate zero page memory to the process and clear it */
+    p->context.zp = (uint8_t *)((p->pid + 1) * PROC_ZP_SIZE);
+    memset(p->context.zp, 0, PROC_ZP_SIZE);
+
+    /* Process block is ready to go */
+    *proc = p;
+    return 0;
 }
 
-void proc_kill(struct proc *proc)
+void proc_free(struct proc *proc)
 {
-    /* TODO */
     proc->state = PROC_UNUSED;
+    STAILQ_INSERT_TAIL(&unused_procs, proc, next);
 }
 
 static void proc_push_return_stack(struct proc *p, uintptr_t value)
 {
     uint8_t S = p->context.S - 2;
-    /* Return addresses are -1 from the true address */
-    --value;
     /* S points to one below the top of stack, not the top of stack */
     p->context.stack[S + 1] = (uint8_t)value;
     p->context.stack[S + 2] = (uint8_t)(value >> 8);
@@ -140,7 +147,7 @@ static inline void proc_set_arg2(struct proc *p, uint16_t value)
 static void proc_exit(int status)
 {
     /* TODO */
-    (void)status;
+    _exit(status);
 }
 
 int proc_start_internal
@@ -158,19 +165,28 @@ int proc_start_internal
      * when it starts executing.  If "func" returns, then arrange
      * to perform an "_exit" system call. */
     p->context.S = PROC_STACK_SIZE - 1;
-    proc_push_return_stack(p, (uintptr_t)proc_exit);
-    proc_push_return_stack(p, (uintptr_t)func);
-    proc_push_stack_frame(p, *((uint16_t *)(p->args)));   /* argc */
-    proc_set_arg2(p, (uint16_t)(uintptr_t)(p->args + 2)); /* argv */
+    proc_push_return_stack(p, ((uintptr_t)proc_exit) - 1); /* for rts */
+    proc_push_return_stack(p, (uintptr_t)func);            /* for rti */
+    proc_push_stack_frame(p, *((uint16_t *)(p->args)));    /* argc */
+    proc_set_arg2(p, (uint16_t)(uintptr_t)(p->args + 2));  /* argv */
 
     /* Process is now runnable */
-    p->state = PROC_RUNNING;
-    return (p - process_table) + 1;
+    sched_set_runnable(p);
+    return p->pid;
+}
+
+/* Entry point to the in-ROM shell code, provided by the linker script. */
+int shell_start(int argc, char **argv);
+
+void proc_start_shell(void)
+{
+    static char * const shell_argv[] = {"/bin/sh", 0};
+    proc_start_internal(0, shell_start, 1, (char **)shell_argv);
 }
 
 int sys_getpid(void)
 {
-    return (current_proc - process_table) + 1;
+    return current_proc->pid;
 }
 
 int sys_getppid(void)

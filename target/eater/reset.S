@@ -35,7 +35,6 @@ _irqbrk:
   pla
   jmp irq               ; Jump to the user-supplied IRQ handler.
 .Ldo_break:
-  phy                   ; Also save Y on the stack.
   cli                   ; Re-enable interrupts.
   jmp brk_syscall       ; Handle the system call.
 

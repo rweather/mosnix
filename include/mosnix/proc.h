@@ -12,6 +12,7 @@
 #include <mosnix/attributes.h>
 #include <mosnix/config.h>
 #include <sys/types.h>
+#include <sys/queue.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -84,8 +85,10 @@ enum ATTR_ENUM_PACKED proc_state
  */
 struct proc_stack_frame
 {
+#if !defined(CPU_65C02)
     /** Y index register */
     uint8_t Y;
+#endif
 
     /** X index register */
     uint8_t X;
@@ -95,9 +98,6 @@ struct proc_stack_frame
 
     /** Processor status register */
     uint8_t P;
-
-    /** Return address to the calling function */
-    uint16_t return_address;
 };
 
 /**
@@ -123,6 +123,9 @@ struct proc
     /** Saved context information for the process */
     struct proc_context context;
 
+    /** Identifier of this process */
+    pid_small_t pid;
+
     /** Parent process identifier, or PID_UNUSED if this process
      *  does not have a parent. */
     pid_small_t ppid;
@@ -130,9 +133,15 @@ struct proc
     /** Current process state */
     enum proc_state state;
 
+    /** Queue next pointer */
+    STAILQ_ENTRY(proc) next;
+
     /** Arguments to the process, formatted as an array of strings. */
     char args[CONFIG_ARG_MAX];
 };
+
+/* Declare the struct run_queue type */
+STAILQ_HEAD(run_queue, proc);
 
 /**
  * @brief Entry point for a user process that is implemented inside the kernel.
@@ -173,11 +182,14 @@ void proc_init(void);
 int proc_create(pid_t ppid, int argc, char **argv, struct proc **proc);
 
 /**
- * @brief Kills a process.
+ * @brief Frees a process.
  *
- * @param[in] proc Points to the process to kill.
+ * @param[in] proc Points to the process to free.
+ *
+ * The process must have already been removed from any run queues or
+ * wait queues that is was a member of.
  */
-void proc_kill(struct proc *proc);
+void proc_free(struct proc *proc);
 
 /**
  * @brief Starts a process that is implemented inside the kernel itself.
@@ -191,6 +203,11 @@ void proc_kill(struct proc *proc);
  */
 int proc_start_internal
     (pid_t ppid, proc_internal_func_t func, int argc, char **argv);
+
+/**
+ * @brief Starts the shell process running as pid 1.
+ */
+void proc_start_shell(void);
 
 #ifdef __cplusplus
 }

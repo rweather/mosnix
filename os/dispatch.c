@@ -34,7 +34,7 @@ void * const SYSCALL_TABLE[128] __attribute__((retain)) = {
     /*  20 */ (void *)sys_getpid,
     /*  21 */ (void *)sys_getppid,
     /*  22 */ (void *)sys_exit,
-    /*  23 */ (void *)sys_notimp,
+    /*  23 */ (void *)sys_sched_yield,
     /*  24 */ (void *)sys_notimp,
     /*  25 */ (void *)sys_notimp,
     /*  26 */ (void *)sys_notimp,

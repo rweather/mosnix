@@ -14,6 +14,7 @@
 20  |getpid         |pid_t      |void
 21  |getppid        |pid_t      |void
 22  |_exit          |void       |int status
+23  |sched_yield    |int        |void
 #
 # Identification
 #

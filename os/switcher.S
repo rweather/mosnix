@@ -10,12 +10,11 @@
 ; This is the core context-switching engine for MOSnix.
 ;
 ; Once the kernel has finished its initialization, it will arrange to
-; run the shell as process 1 and then it calls run_scheduler().
-; The context switcher constantly looks for runnable processes and
-; dispatches them.
+; run the shell as process 1 and then it calls sched_start().  This function
+; constantly looks for runnable processes and dispatches them.
 ;
 ; When a process performs a system call, control goes to the SYSCALL()
-; function which runs at the same kernel stack level as run_scheduler().
+; function which runs at the same kernel stack level as sched_start().
 ;
 
 #include "imag.inc"
@@ -23,15 +22,16 @@
 #define CPU_STACK 0x0100
 #define PROC_STACK_SIZE 64
 
-.global run_scheduler
-.section .text.run_scheduler,"ax",@progbits
-run_scheduler:
+.global sched_start
+.section .text.sched_start,"ax",@progbits
+sched_start:
   tsx                       ; Save the kernel stack pointers.
   stx __kernel_stack
   lda __rc0
   sta __kernel_stack+1
   lda __rc1
   sta __kernel_stack+2
+  inc in_kernel             ; We are current in the kernel context.
 .Lrun_scheduler_loop:
   jsr schedule
   jmp .Lrun_scheduler_loop
@@ -39,6 +39,14 @@ run_scheduler:
 ;
 ; System call dispatcher.  This is called from the IRQBRK handler
 ; whenever we encounter a BRK instruction.  BRK is our system call trap.
+;
+; On entry to this function, the stack should be set up as follows
+; (top of stack is to the left):
+;
+;   65c02:  X A P <return-address>
+;   6502:   Y X A P <return-address>
+;
+; Y will be destroyed by this function.  A:X returns the system call result.
 ;
 .global brk_syscall
 .section .text.brk_syscall,"axR",@progbits
@@ -51,87 +59,106 @@ brk_syscall:
 ;
 ; Save the user stack pointer to the "current_proc" variable.
 ;
-  ldy #0
   tsx
   txa
+#if defined(CPU_65C02)
+  sta (current_proc)
+#else
+  ldy #0
   sta (current_proc),y
+#endif
 
 ;
-; Load the kernel stack pointers from the values saved in run_scheduler().
+; Load the kernel stack pointers from the values saved in sched_start().
 ;
   ldx __kernel_stack
   txs
-  lda __kernel_stack+1
-  sta __rc0
-  lda __kernel_stack+2
-  sta __rc1
+  ldx __kernel_stack+1
+  stx __rc0
+  ldx __kernel_stack+2
+  stx __rc1
 
 ;
 ; Dispatch the system call.
 ;
-  lda (current_proc),y
-  tay
 #if defined(CPU_65C02)
-  ldx CPU_STACK+2,y
-#else
-  ldx CPU_STACK,y
-#endif
-  lda SYSCALL_TABLE,x
+  tax
+  lda SYSCALL_TABLE,y
+  sta __rc4
+  lda SYSCALL_TABLE+1,y
+  sta __rc5
+  lda CPU_STACK+3,x
   sta __rc2
-  lda SYSCALL_TABLE+1,x
+  lda CPU_STACK+2,x
   sta __rc3
-#if defined(CPU_65C02)
-  lda CPU_STACK,y
-  ldx CPU_STACK+1,y
 #else
+  tay
+  ldx CPU_STACK+1,y
+  lda SYSCALL_TABLE,x
+  sta __rc4
+  lda SYSCALL_TABLE+1,x
+  sta __rc5
+  lda CPU_STACK+3,y
+  sta __rc2
   lda CPU_STACK+2,y
-  ldx CPU_STACK+2,y
+  sta __rc3
 #endif
-  jsr dispatch_syscall
+  jsr .Lbrk_dispatch
 
 ;
 ; Restore the user stack pointer from the "current_proc" variable.
+; Also arrange to pass A:X back to the caller.
 ;
+#if defined(CPU_65C02)
+  tay
+  stx __rc3
+  lda (current_proc)
+  tax
+  txs
+  pla ; Discard the incoming X value from the stack.
+  pla ; Discard the incoming A value from the stack.
+  tya
+  ldx __rc3
+#else
+  sta __rc2
+  stx __rc3
   ldy #0
   lda (current_proc),y
   tax
   txs
+  pla ; Discard the incoming Y value from the stack.
+  pla ; Discard the incoming X value from the stack.
+  pla ; Discard the incoming A value from the stack.
+  lda __rc2
+  ldx __rc3
+#endif
 
 ;
-; Now leaving kernel space.  Re-enable preemption.
+; Now leaving kernel space.  Re-enable preemption and return.
 ;
   dec in_kernel
-
-;
-; Restore the registers from the user stack and return to user space.
-;
-#if defined(CPU_65C02)
-  ply
-  plx
-  pla
-#else /* !CPU_65C02 */
-  pla
-  tay
-  pla
-  tax
-  pla
-#endif /* !CPU_65C02 */
   rti
+.Lbrk_dispatch:
+  jmp (__rc4)
 
 ;
-; Swap out the user stack for the current process.
+; Swap out the current process.
 ;
 ; Everything from S up to PROC_STACK_SIZE is copied out of the
 ; 6502 return stack at $0100 to the process block.
 ;
-.global swap_out_stack
-.section .text.swap_out_stack,"ax",@progbits
-swap_out_stack:
+.global swap_out
+.section .text.swap_out,"ax",@progbits
+swap_out:
+#if defined(CPU_65C02)
+  lda (current_proc)
+#else
   ldy #0
   lda (current_proc),y
+#endif
   tax
   clc
-  adc #3
+  adc #4
   tay
   inx ; S points to 1 below the top of stack, so adjust for that.
 .Lswap_out_loop:
@@ -143,34 +170,82 @@ swap_out_stack:
   inx
   bne .Lswap_out_loop
 .Lswap_out_done:
+  ; Set current_proc to NULL before returning.
+#if defined(CPU_65C02)
+  stz current_proc
+  stz current_proc+1
+#else
+  lda #0
+  sta current_proc
+  sta current_proc+1
+#endif
   rts
 
 ;
-; Swap in the user stack for the current process.
+; Swap in a process and start running it.
 ;
 ; Everything from S up to PROC_STACK_SIZE is copied out of the
 ; process block to the 6502 return stack at $0100.
 ;
-.global swap_in_stack
-.section .text.swap_in_stack,"ax",@progbits
-swap_in_stack:
+.global swap_in
+.section .text.swap_in,"ax",@progbits
+swap_in:
+  lda __rc2
+  ldx __rc3
+  cmp current_proc      ; Is the new "proc" the same as "current_proc"?
+  bne .Lswap_in_new     ; If so, the user stack is already swapped in.
+  cpx current_proc+1
+  beq .Lswap_in_ready
+;
+.Lswap_in_new:
+  sta current_proc      ; We are swapping in a new process.
+  stx current_proc+1
   ldy #0
   lda (current_proc),y
   tax
   clc
-  adc #3
+  adc #4
   tay
   inx ; S points to 1 below the top of stack, so adjust for that.
+;
 .Lswap_in_loop:
   cpx #PROC_STACK_SIZE
-  bcs .Lswap_in_done
+  bcs .Lswap_in_ready
   lda (current_proc),y
   sta CPU_STACK,x
   iny
   inx
   bne .Lswap_in_loop
-.Lswap_in_done:
-  rts
+;
+.Lswap_in_ready:
+;
+; Switch to the target process's stack.
+;
+  ldy #0
+  lda (current_proc),y
+  tax
+  txs
+
+;
+; Pop the stack frame, restoring the A:X value we want to return
+; to the interrupted process.
+;
+#if defined(CPU_65C02)
+  plx
+  pla
+#else
+  pla
+  tay
+  pla
+  tax
+  pla
+#endif
+
+;
+; Now leaving kernel space.  Re-enable preemption and return.
+;
+  dec in_kernel
+  rti
 
 .section .bss,"aw",@nobits
 __kernel_stack:

@@ -4,6 +4,7 @@
 
 import gentools
 import sys
+import re
 
 file = open(sys.argv[1], 'r')
 lines = file.readlines()
@@ -21,7 +22,7 @@ for line in lines:
     fields = line.strip().split('|')
     fields = [s.strip() for s in fields]
     if len(fields) > 3 and fields[3] != 'void':
-        print("struct sys_%s_s {" % fields[1].replace('_',''))
+        print("struct sys_%s_s {" % re.sub(r'^_', '', fields[1]))
         for field in fields[3:]:
             if field.startswith(">"):
                 field = field[1:]
@@ -35,7 +36,7 @@ for line in lines:
         continue
     fields = line.strip().split('|')
     fields = [s.strip() for s in fields]
-    name = fields[1].replace('_','')
+    name = re.sub(r'^_', '', fields[1])
     if len(fields) <= 3 or fields[3] == 'void':
         print("/* %3d */ extern int sys_%s(void);" % (int(fields[0]), name))
     elif fields[2] == 'void':

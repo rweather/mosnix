@@ -7,10 +7,9 @@
  */
 
 #include <mosnix/proc.h>
+#include <mosnix/sched.h>
 #include <mosnix/syscall.h>
 #include <stdio.h>
-
-extern void run_scheduler(void);
 
 int main(void)
 {
@@ -20,11 +19,10 @@ int main(void)
     /* Initialize all kernel subsystems */
     proc_init();
 
-    /* Launch the shell process */
-    /* TODO */
+    /* Launch the shell process as our version of "init" */
+    proc_start_shell();
 
     /* Run the scheduler forever */
-    // TODO
-    //run_scheduler();
+    sched_start();
     return 0;
 }

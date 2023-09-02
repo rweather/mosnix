@@ -56,6 +56,11 @@ void _exit(int status)
     while (1) ; /* stop compiler complaining about reachable unreachable code */
 }
 
+int sched_yield(void)
+{
+    return syscall(SYS_sched_yield);
+}
+
 uid_t getuid(void)
 {
     return syscall(SYS_getuid);

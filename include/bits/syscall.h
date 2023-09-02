@@ -19,6 +19,7 @@
 #define SYS_getpid 20
 #define SYS_getppid 21
 #define SYS_exit 22
+#define SYS_sched_yield 23
 #define SYS_getuid 30
 #define SYS_geteuid 31
 #define SYS_setuid 32
