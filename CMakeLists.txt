@@ -47,5 +47,5 @@ add_subdirectory(os)
 
 # "make boot" will boot the kernel with "mos-sim".
 add_custom_target(boot COMMAND
-    ${MOS_SIM} ${CMAKE_BINARY_DIR}/os/mosnix-sim-${CMAKE_PROJECT_VERSION}
+    ${MOS_SIM} ${CMAKE_BINARY_DIR}/os/mosnix-sim
 )

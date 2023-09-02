@@ -24,11 +24,11 @@ target_link_options(kernel-sim
             -L${CMAKE_BINARY_DIR}/target/sim -ltarget-sim
             -lexit-custom -linit-stack -lcopy-zp-data -lzero-bss
 )
-add_custom_target(mosnix-sim-${CMAKE_PROJECT_VERSION} ALL
-    COMMAND cat ${CMAKE_BINARY_DIR}/shell/shell-sim kernel-sim >mosnix-sim-${CMAKE_PROJECT_VERSION}
+add_custom_target(mosnix-sim ALL
+    COMMAND cat ${CMAKE_BINARY_DIR}/shell/shell-sim kernel-sim >mosnix-sim
     DEPENDS ${CMAKE_BINARY_DIR}/shell/shell-sim
 )
-add_dependencies(mosnix-sim-${CMAKE_PROJECT_VERSION} kernel-sim shell-sim)
+add_dependencies(mosnix-sim kernel-sim shell-sim)
 
 # Build a kernel for Ben Eater's breadboard computer.
 add_executable(kernel-eater ${KERNEL_SOURCES})
@@ -43,14 +43,14 @@ target_link_options(kernel-eater
             -L${CMAKE_BINARY_DIR}/target/eater -ltarget-eater
             -lexit-loop -linit-stack -lcopy-zp-data -lzero-bss
 )
-add_custom_target(mosnix-eater-${CMAKE_PROJECT_VERSION} ALL
-    COMMAND cat ${CMAKE_BINARY_DIR}/shell/shell-eater kernel-eater >mosnix-eater-${CMAKE_PROJECT_VERSION}
+add_custom_target(mosnix-eater ALL
+    COMMAND cat ${CMAKE_BINARY_DIR}/shell/shell-eater kernel-eater >mosnix-eater
     DEPENDS ${CMAKE_BINARY_DIR}/shell/shell-eater
 )
-add_dependencies(mosnix-eater-${CMAKE_PROJECT_VERSION} kernel-eater shell-eater)
+add_dependencies(mosnix-eater kernel-eater shell-eater)
 
 # Install all kernels under /usr/local/share/mosnix/kernels or equivalent.
 #install(TARGETS
-#    mosnix-sim-${CMAKE_PROJECT_VERSION}
-#    mosnix-eater-${CMAKE_PROJECT_VERSION}
+#    mosnix-sim
+#    mosnix-eater
 #DESTINATION ${CMAKE_INSTALL_DATADIR}/mosnix/kernels)
