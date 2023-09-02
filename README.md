@@ -23,19 +23,6 @@ they have all fallen back on writing the OS and user space applications
 in assembly.  This limits the power of the resulting system and can be
 difficult to maintain.
 
-Previous OS efforts have also been hampered by the hardware they run on.
-For example, the Commodore 64's 1541 disk drives are notoriously slow.
-Loading and running programs in something like
-[GeckOS](http://www.6502.org/users/andre/osa/index.html) can be painful
-because of this.  Even in emulation.
-
-However, in recent years there have been an number of bare bones 6502
-computers, notably [Ben Eater's Breadboard 6502](https://eater.net/6502).
-There is very little legacy holding these designs back, other than the
-lack of peripherals and good code.  Add a serial port as a console
-and an SD card and the result is quite usable in a "1970's Unix"
-kind of way.
-
 This experiment is about finding out if a useful operating system can
 be built in mostly C using llvm-mos, using a small amount of assembly
 code for context switching and hardware interfacing.  The experiment

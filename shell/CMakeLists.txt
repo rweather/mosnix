@@ -7,7 +7,7 @@ set(SHELL_SOURCES
 # Build a shell for "mos-sim" from the "llvm-mos" project.
 add_executable(shell-sim ${SHELL_SOURCES})
 target_compile_options(shell-sim
-    PUBLIC -mcpu=mos6502
+    PUBLIC -mcpu=mos6502 -DMOSNIX_TARGET_SIM=1
 )
 target_link_options(shell-sim
     PRIVATE -mlto-zp=0 -T${CMAKE_CURRENT_LIST_DIR}/link-sim.ld
@@ -19,7 +19,7 @@ target_link_options(shell-sim
 # Build a shell for Ben Eater's breadboard computer.
 add_executable(shell-eater ${SHELL_SOURCES})
 target_compile_options(shell-eater
-    PUBLIC -mcpu=mosw65c02
+    PUBLIC -mcpu=mosw65c02 -DMOSNIX_TARGET_EATER=1
 )
 target_link_options(shell-eater
     PRIVATE -mlto-zp=0 -T${CMAKE_CURRENT_LIST_DIR}/link-eater.ld
