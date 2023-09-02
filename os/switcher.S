@@ -31,7 +31,7 @@ sched_start:
   sta __kernel_stack+1
   lda __rc1
   sta __kernel_stack+2
-  inc in_kernel             ; We are current in the kernel context.
+  inc in_kernel             ; We are currently in the kernel context.
 .Lrun_scheduler_loop:
   jsr schedule
   jmp .Lrun_scheduler_loop
@@ -87,9 +87,9 @@ brk_syscall:
   sta __rc4
   lda SYSCALL_TABLE+1,y
   sta __rc5
-  lda CPU_STACK+3,x
-  sta __rc2
   lda CPU_STACK+2,x
+  sta __rc2
+  lda CPU_STACK+1,x
   sta __rc3
 #else
   tay
@@ -156,18 +156,15 @@ swap_out:
   ldy #0
   lda (current_proc),y
 #endif
-  tax
   clc
   adc #4
   tay
-  inx ; S points to 1 below the top of stack, so adjust for that.
 .Lswap_out_loop:
-  cpx #PROC_STACK_SIZE
+  cpy #(PROC_STACK_SIZE+3)
   bcs .Lswap_out_done
-  lda CPU_STACK,x
+  lda CPU_STACK-3,y
   sta (current_proc),y
   iny
-  inx
   bne .Lswap_out_loop
 .Lswap_out_done:
   ; Set current_proc to NULL before returning.
@@ -202,27 +199,28 @@ swap_in:
   stx current_proc+1
   ldy #0
   lda (current_proc),y
-  tax
   clc
   adc #4
   tay
-  inx ; S points to 1 below the top of stack, so adjust for that.
 ;
 .Lswap_in_loop:
-  cpx #PROC_STACK_SIZE
+  cpy #(PROC_STACK_SIZE+3)
   bcs .Lswap_in_ready
   lda (current_proc),y
-  sta CPU_STACK,x
+  sta CPU_STACK-3,y
   iny
-  inx
   bne .Lswap_in_loop
 ;
 .Lswap_in_ready:
 ;
 ; Switch to the target process's stack.
 ;
+#if defined(CPU_65C02)
+  lda (current_proc)
+#else
   ldy #0
   lda (current_proc),y
+#endif
   tax
   txs
 

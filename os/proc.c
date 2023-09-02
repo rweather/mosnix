@@ -122,6 +122,8 @@ void proc_free(struct proc *proc)
 static void proc_push_return_stack(struct proc *p, uintptr_t value)
 {
     uint8_t S = p->context.S - 2;
+    /* Return address is the value minus 1 */
+    --value;
     /* S points to one below the top of stack, not the top of stack */
     p->context.stack[S + 1] = (uint8_t)value;
     p->context.stack[S + 2] = (uint8_t)(value >> 8);
@@ -165,8 +167,8 @@ int proc_start_internal
      * when it starts executing.  If "func" returns, then arrange
      * to perform an "_exit" system call. */
     p->context.S = PROC_STACK_SIZE - 1;
-    proc_push_return_stack(p, ((uintptr_t)proc_exit) - 1); /* for rts */
-    proc_push_return_stack(p, (uintptr_t)func);            /* for rti */
+    proc_push_return_stack(p, (uintptr_t)proc_exit);
+    proc_push_return_stack(p, ((uintptr_t)func) + 1);
     proc_push_stack_frame(p, *((uint16_t *)(p->args)));    /* argc */
     proc_set_arg2(p, (uint16_t)(uintptr_t)(p->args + 2));  /* argv */
 

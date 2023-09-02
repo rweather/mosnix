@@ -17,7 +17,7 @@ extern "C" {
 
 /* Invoke a kernel system call.  If the result is negative,
  * then populate the "errno" variable and return -1. */
-int syscall(unsigned char number, ...);
+__attribute__((leaf)) int syscall(unsigned char number, ...);
 
 #ifdef __cplusplus
 }

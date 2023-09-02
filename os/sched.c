@@ -26,7 +26,7 @@ static struct run_queue runnable = STAILQ_HEAD_INITIALIZER(runnable);
  * On entry, "current_proc" must point to the current process.
  * On exit, "current_proc" will be set to NULL.
  */
-extern void swap_out(void);
+__attribute__((leaf)) void swap_out(void);
 
 /**
  * @brief Swaps in a process and starts running it.
@@ -40,26 +40,7 @@ extern void swap_out(void);
  * This function will not return to the caller.  The kernel will be
  * re-entered via a different path when the next system call occurs.
  */
-void swap_in(struct proc *proc);
-
-/**
- * @brief Dispatches a system call to the relevant handler.
- *
- * @param[in] arg Points to the arguments to the system call.
- * @param[in] handler Points to the handler function from the dispatch table.
- */
-void dispatch_syscall(void *arg, int (*handler)(void *arg))
-{
-    /* Invoke the system call and put the result back into the stack frame */
-    int result = (*handler)(arg);
-    struct proc_stack_frame *frame =
-        (struct proc_stack_frame *)(0x0100 + current_proc->context.S);
-    frame->A = (uint8_t)result;
-    frame->X = (uint8_t)(result >> 8);
-
-    /* Find the next runnable process and switch to it */
-    /* TODO */
-}
+__attribute__((leaf)) void swap_in(struct proc *proc);
 
 void sched_set_runnable(struct proc *proc)
 {
