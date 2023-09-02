@@ -10,7 +10,7 @@ file = open(sys.argv[1], 'r')
 lines = file.readlines()
 file.close()
 
-gentools.print_header("MOSNIX_SYSCALL_H", cplusplus=True, include=["<sys/types.h>"])
+gentools.print_header("MOSNIX_SYSCALL_H", cplusplus=True, include=["<sys/types.h>", "<sys/utsname.h>"])
 
 print("/* Generated automatically */")
 print("")
@@ -21,8 +21,10 @@ for line in lines:
         continue
     fields = line.strip().split('|')
     fields = [s.strip() for s in fields]
+    name = re.sub(r'^_', '', fields[1])
+    name = name.replace('%', '')
     if len(fields) > 3 and fields[3] != 'void':
-        print("struct sys_%s_s {" % re.sub(r'^_', '', fields[1]))
+        print("struct sys_%s_s {" % name)
         for field in fields[3:]:
             if field.startswith(">"):
                 field = field[1:]
@@ -37,6 +39,7 @@ for line in lines:
     fields = line.strip().split('|')
     fields = [s.strip() for s in fields]
     name = re.sub(r'^_', '', fields[1])
+    name = name.replace('%', '')
     if len(fields) <= 3 or fields[3] == 'void':
         print("/* %3d */ extern int sys_%s(void);" % (int(fields[0]), name))
     elif fields[2] == 'void':

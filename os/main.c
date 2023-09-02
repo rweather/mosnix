@@ -13,9 +13,6 @@
 
 int main(void)
 {
-    /* Print a welcome banner */
-    puts("MOSnix " MOSNIX_VERSION);
-
     /* Initialize all kernel subsystems */
     proc_init();
 

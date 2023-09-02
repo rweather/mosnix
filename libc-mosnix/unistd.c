@@ -8,6 +8,7 @@
 
 #include <unistd.h>
 #include <sys/syscall.h>
+#include <sys/utsname.h>
 
 /* Generated automatically */
 
@@ -99,5 +100,10 @@ int setgid(gid_t gid)
 int setegid(gid_t gid)
 {
     return syscall(SYS_setegid, gid);
+}
+
+int uname(struct utsname *buf)
+{
+    return syscall(SYS_uname, buf);
 }
 

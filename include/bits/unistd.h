@@ -25,7 +25,6 @@ extern off_t lseek(int fd, off_t offset, int whence);
 extern pid_t getpid(void);
 extern pid_t getppid(void);
 extern void _exit(int status);
-extern int sched_yield(void);
 extern uid_t getuid(void);
 extern uid_t geteuid(void);
 extern int setuid(uid_t uid);

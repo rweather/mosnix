@@ -9,6 +9,7 @@ set(KERNEL_SOURCES
     proc.c
     sched.c
     switcher.S
+    uname.c
 )
 
 # Build a kernel for "mos-sim" from the "llvm-mos" project.

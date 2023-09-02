@@ -14,7 +14,7 @@
 20  |getpid         |pid_t      |void
 21  |getppid        |pid_t      |void
 22  |_exit          |void       |int status
-23  |sched_yield    |int        |void
+23  |sched_yield%   |int        |void
 #
 # Identification
 #
@@ -26,3 +26,7 @@
 35  |getegid        |gid_t      |void
 36  |setgid         |int        |gid_t gid
 37  |setegid        |int        |gid_t gid
+#
+# Other
+#
+100 |uname%         |int        |struct utsname *buf

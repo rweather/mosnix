@@ -10,6 +10,7 @@
 #define MOSNIX_SYSCALL_H
 
 #include <sys/types.h>
+#include <sys/utsname.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,6 +67,10 @@ struct sys_setegid_s {
     gid_t gid;
 };
 
+struct sys_uname_s {
+    struct utsname *buf;
+};
+
 /*   0 */ extern int sys_read(struct sys_read_s *args);
 /*   1 */ extern int sys_write(struct sys_write_s *args);
 /*   2 */ extern int sys_open(struct sys_open_s *args);
@@ -83,6 +88,7 @@ struct sys_setegid_s {
 /*  35 */ extern int sys_getegid(void);
 /*  36 */ extern int sys_setgid(struct sys_setgid_s *args);
 /*  37 */ extern int sys_setegid(struct sys_setegid_s *args);
+/* 100 */ extern int sys_uname(struct sys_uname_s *args);
 /* N/A */ extern int sys_notimp(void);
 
 #ifdef __cplusplus

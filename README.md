@@ -41,6 +41,20 @@ be built in mostly C using llvm-mos, using a small amount of assembly
 code for context switching and hardware interfacing.  The experiment
 may fail, but I think it is worth doing.
 
+What state is it in?
+--------------------
+
+Very early days!
+
+* Basic system call dispatching to prove the concept.
+* No more than 6 user space processes, 5 excluding the shell.
+* A single user space process for the shell.
+* Pre-emption has not been implemented yet.
+* No filesystem, fork/exec, etc from POSIX.
+* Reading from stdin and writing to stdout/stderr basically works.
+* Shell doesn't do anything yet other than echo its input.
+* System call numbering is not set in stone, will probably change.
+
 Building
 --------
 

@@ -28,5 +28,6 @@
 #define SYS_getegid 35
 #define SYS_setgid 36
 #define SYS_setegid 37
+#define SYS_uname 100
 
 #endif

@@ -24,6 +24,7 @@ for line in lines:
     fields = line.strip().split('|')
     fields = [s.strip() for s in fields]
     name = re.sub(r'^_', '', fields[1])
+    name = name.replace('%', '')
     number = int(fields[0])
     while next_syscall < number:
         print("    /* %3d */ (void *)sys_notimp," % next_syscall)

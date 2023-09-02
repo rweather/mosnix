@@ -20,6 +20,8 @@ for line in lines:
         continue
     fields = line.strip().split('|')
     fields = [s.strip() for s in fields]
-    print("#define SYS_%s %s" % (re.sub(r'^_', '', fields[1]), fields[0]))
+    name = re.sub(r'^_', '', fields[1])
+    name = name.replace('%', '')
+    print("#define SYS_%s %s" % (name, fields[0]))
 
 gentools.print_footer(cplusplus=False)

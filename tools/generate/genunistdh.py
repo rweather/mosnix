@@ -21,6 +21,9 @@ for line in lines:
     fields = line.strip().split('|')
     fields = [s.strip() for s in fields]
     name = fields[1]
+    if name.endswith('%'):
+        # Don't declare this name in <unistd.h>.
+        continue
     returnType = fields[2]
     if len(fields) <= 3 or fields[3] == 'void':
         print("extern %s %s(void);" % (returnType, name))
