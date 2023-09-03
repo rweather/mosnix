@@ -51,8 +51,8 @@ add_custom_target(mosnix-eater ALL
 )
 add_dependencies(mosnix-eater kernel-eater shell-eater)
 
-# Install all kernels under /usr/local/share/mosnix/kernels or equivalent.
-#install(TARGETS
-#    mosnix-sim
-#    mosnix-eater
-#DESTINATION ${CMAKE_INSTALL_DATADIR}/mosnix/kernels)
+# Install the kernels under "<prefix>/share/mosnix/kernels".
+install(FILES
+    mosnix-sim
+    mosnix-eater
+DESTINATION ${CMAKE_INSTALL_DATADIR}/mosnix/kernels)
