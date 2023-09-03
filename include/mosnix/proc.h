@@ -72,12 +72,15 @@ enum ATTR_ENUM_PACKED proc_state
 #define PROC_ZP_SIZE 32
 
 /**
- * @brief Maximum amount of stack space the process can use between
- * 0x0100 and 0x1FF.
+ * @brief Number of RCx kernel registers to save for the process.
  *
- * This is also the maximum "S" value that the process may use.
+ * RC20 to RC31 must be callee-saved according to the llvm-mos documentation:
+ * https://llvm-mos.org/wiki/C_calling_convention
+ *
+ * We also need to save RC0:RC1 but that is already handled in the "kstack"
+ * variable of the context below.
  */
-#define PROC_STACK_SIZE 64
+#define PROC_KERNEL_ZP_SIZE 12
 
 /**
  * @brief Structure of registers that are saved on the stack for
@@ -111,8 +114,14 @@ struct proc_context
     /** Address in the zero page of the process's registers. */
     uint8_t *zp;
 
-    /** Saved locations from the 6502 stack when context-switching */
-    uint8_t stack[PROC_STACK_SIZE];
+    /** Saved locations from the 6502 return stack when context-switching */
+    uint8_t stack[CONFIG_RETURN_STACK_SIZE];
+
+    /** Top of the per-process kernel data stack to use in system calls */
+    uint8_t *kstack;
+
+    /** Callee-saved zero page registers for the kernel */
+    uint8_t kzp[PROC_KERNEL_ZP_SIZE];
 };
 
 /**

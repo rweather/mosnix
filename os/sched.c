@@ -18,29 +18,15 @@
 static struct run_queue runnable = STAILQ_HEAD_INITIALIZER(runnable);
 
 /**
- * @brief Swaps out the current user process in preparation to switch
- * to a different process.
+ * @brief Switches to a different process and continues running it.
  *
- * The contents of the stack in the $0100 page are copied to the process block.
+ * @param[in] proc The process to switch to.  Must not be NULL
+ * although the previous value of "current_proc" can be NULL.
  *
- * On entry, "current_proc" must point to the current process.
- * On exit, "current_proc" will be set to NULL.
+ * This function will return when the current process can continue
+ * from where it left off.
  */
-__attribute__((leaf)) void swap_out(void);
-
-/**
- * @brief Swaps in a process and starts running it.
- *
- * @param[in] proc The process to switch to.
- *
- * The contents of the process block are copied to the $0100 page if
- * @a proc is not the same as "current_proc".  Otherwise it is assumed
- * that the stack has not been swapped out.
- *
- * This function will not return to the caller.  The kernel will be
- * re-entered via a different path when the next system call occurs.
- */
-__attribute__((leaf)) void swap_in(struct proc *proc);
+__attribute__((leaf)) void proc_switch_to(struct proc *proc);
 
 void sched_set_runnable(struct proc *proc)
 {
@@ -60,7 +46,7 @@ void schedule(void)
         /* Nothing is runnable, so the system is dead! */
         _exit(1);
     }
-    swap_in(proc);
+    proc_switch_to(proc);
 }
 
 int sys_sched_yield(void)

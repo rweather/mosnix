@@ -18,20 +18,23 @@
 ;
 
 #include "imag.inc"
+#include <mosnix/config.h>
 
 #define CPU_STACK 0x0100
-#define PROC_STACK_SIZE 64
 
 .global sched_start
 .section .text.sched_start,"ax",@progbits
 sched_start:
-  tsx                       ; Save the kernel stack pointers.
-  stx __kernel_stack
-  lda __rc0
-  sta __kernel_stack+1
-  lda __rc1
-  sta __kernel_stack+2
-  inc in_kernel             ; We are currently in the kernel context.
+;
+; Adjust the top of stack so that the main kernel thread is using the
+; right stack range to be converted into the shell user process.
+;
+  ldx #CONFIG_RETURN_STACK_SIZE
+  txs
+;
+; We are currently in the kernel context.
+;
+  inc mos8(in_kernel)
 .Lrun_scheduler_loop:
   jsr schedule
   jmp .Lrun_scheduler_loop
@@ -54,7 +57,7 @@ brk_syscall:
 ;
 ; We are now in kernel space.  Block preemption.
 ;
-  inc in_kernel
+  inc mos8(in_kernel)
 
 ;
 ; Save the user stack pointer to the "current_proc" variable.
@@ -67,16 +70,6 @@ brk_syscall:
   ldy #0
   sta (current_proc),y
 #endif
-
-;
-; Load the kernel stack pointers from the values saved in sched_start().
-;
-  ldx __kernel_stack
-  txs
-  ldx __kernel_stack+1
-  stx __rc0
-  ldx __kernel_stack+2
-  stx __rc1
 
 ;
 ; Dispatch the system call.
@@ -136,20 +129,103 @@ brk_syscall:
 ;
 ; Now leaving kernel space.  Re-enable preemption and return.
 ;
-  dec in_kernel
+  dec mos8(in_kernel)
   rti
 .Lbrk_dispatch:
   jmp (__rc4)
 
 ;
-; Swap out the current process.
+; Switch to another process and continue running it.
 ;
-; Everything from S up to PROC_STACK_SIZE is copied out of the
-; 6502 return stack at $0100 to the process block.
+.global proc_switch_to
+.section .text.proc_switch_to,"ax",@progbits
+proc_switch_to:
 ;
-.global swap_out
-.section .text.swap_out,"ax",@progbits
-swap_out:
+; Is this the same process as last time?  If so, then we are already in
+; the right process and there is nothing to do.
+;
+  lda __rc2
+  cmp current_proc
+  bne .Lswap_out_old
+  lda __rc3
+  cmp current_proc+1
+  bne .Lswap_out_old
+  rts
+
+;
+; If "current_proc" is NULL, then there is nothing to "swap out".
+;
+.Lswap_out_old:
+  lda current_proc
+  ora current_proc+1
+  beq .Lswap_in_new
+
+;
+; Set up the return conditions so that "rti" from another process
+; will return control to this process.
+;
+  lda #mos16hi(.Lswap_in_return)
+  pha
+  lda #mos16lo(.Lswap_in_return)
+  pha
+  php
+
+;
+; Copy the contents of the return address stack to the process block.
+;
+  tsx
+  txa
+#if defined(CPU_65C02)
+  sta (current_proc)
+#else
+  ldy #0
+  sta (current_proc),y
+#endif
+  clc
+  adc #4
+  tay
+.Lswap_out_ustack_loop:
+  cpy #(CONFIG_RETURN_STACK_SIZE+3)
+  bcs .Lswap_out_ustack_done
+  lda CPU_STACK-3,y
+  sta (current_proc),y
+  iny
+  bne .Lswap_out_ustack_loop
+.Lswap_out_ustack_done:
+
+;
+; Save RC0:RC1 as the "kstack" pointer in the process block.
+;
+  lda __rc0
+  sta (current_proc),y
+  iny
+  lda __rc1
+  sta (current_proc),y
+
+;
+; Copy RC20..RC31 from the actual registers to the process block.
+;
+  ldx #0
+.Lswap_out_imag_regs:
+  iny
+  lda (current_proc),y
+  sta __rc12,x
+  inx
+  cpx #12
+  bne .Lswap_out_imag_regs
+
+;
+; Set the process that we are switching to.
+;
+.Lswap_in_new:
+  lda __rc2
+  sta current_proc
+  lda __rc3
+  sta current_proc+1
+
+;
+; Copy the saved stack contents from the process block to the actual stack.
+;
 #if defined(CPU_65C02)
   lda (current_proc)
 #else
@@ -159,62 +235,66 @@ swap_out:
   clc
   adc #4
   tay
-.Lswap_out_loop:
-  cpy #(PROC_STACK_SIZE+3)
-  bcs .Lswap_out_done
-  lda CPU_STACK-3,y
-  sta (current_proc),y
-  iny
-  bne .Lswap_out_loop
-.Lswap_out_done:
-  ; Set current_proc to NULL before returning.
-#if defined(CPU_65C02)
-  stz current_proc
-  stz current_proc+1
-#else
-  lda #0
-  sta current_proc
-  sta current_proc+1
-#endif
-  rts
-
 ;
-; Swap in a process and start running it.
-;
-; Everything from S up to PROC_STACK_SIZE is copied out of the
-; process block to the 6502 return stack at $0100.
-;
-.global swap_in
-.section .text.swap_in,"ax",@progbits
-swap_in:
-  lda __rc2
-  ldx __rc3
-  cmp current_proc      ; Is the new "proc" the same as "current_proc"?
-  bne .Lswap_in_new     ; If so, the user stack is already swapped in.
-  cpx current_proc+1
-  beq .Lswap_in_ready
-;
-.Lswap_in_new:
-  sta current_proc      ; We are swapping in a new process.
-  stx current_proc+1
-  ldy #0
-  lda (current_proc),y
-  clc
-  adc #4
-  tay
-;
-.Lswap_in_loop:
-  cpy #(PROC_STACK_SIZE+3)
-  bcs .Lswap_in_ready
+.Lswap_in_ustack_loop:
+  cpy #(CONFIG_RETURN_STACK_SIZE+3)
+  bcs .Lswap_in_kstack
   lda (current_proc),y
   sta CPU_STACK-3,y
   iny
-  bne .Lswap_in_loop
+  bne .Lswap_in_ustack_loop
+
 ;
-.Lswap_in_ready:
+; Modify the kernel's RC0:RC1 to point at the kernel data stack
+; for the new process.  This way, the kernel's data stack is
+; ready to use when the user process executes a system call.
+;
+.Lswap_in_kstack:
+  iny
+  lda (current_proc),y
+  dey
+  ora (current_proc),y
+  beq .Lswap_in_set_kstack
+
+;
+; Use the "kstack" value from the process block as the new RC0:RC1.
+;
+  lda (current_proc),y
+  sta __rc0
+  iny
+  lda (current_proc),y
+  sta __rc1
+
+;
+; Copy RC20..RC31 from the process block to the actual registers so
+; that they are ready to use when the next system call happens.
+;
+  ldx #0
+.Lswap_in_imag_regs:
+  iny
+  lda (current_proc),y
+  sta __rc12,x
+  inx
+  cpx #12
+  bne .Lswap_in_imag_regs
+  beq .Lswap_in_switch_stack
+
+;
+; The "kstack" value is NULL so this is the first process we have launched.
+; Copy the current top-of stack in RC0:RC1 to "kstack" in the process block.
+; The original kernel data stack will now become this process's stack.
+;
+.Lswap_in_set_kstack:
+  lda __rc0
+  sta (current_proc),y
+  iny
+  lda __rc1
+  sta (current_proc),y
+
 ;
 ; Switch to the target process's stack.
 ;
+.Lswap_in_switch_stack:
 #if defined(CPU_65C02)
   lda (current_proc)
 #else
@@ -242,9 +322,14 @@ swap_in:
 ;
 ; Now leaving kernel space.  Re-enable preemption and return.
 ;
-  dec in_kernel
+  dec mos8(in_kernel)
   rti
 
-.section .bss,"aw",@nobits
-__kernel_stack:
-  .fill 3
+;
+; Control comes back to here if another process has switched back to us
+; with the "rti" instruction above.  Disable preemption and return back to
+; the code that called proc_switch_to().
+;
+.Lswap_in_return:
+  inc mos8(in_kernel)
+  rts

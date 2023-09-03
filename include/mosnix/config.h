@@ -45,4 +45,20 @@
 #define CONFIG_ARGC_MAX 64
 #endif
 
+/**
+ * @brief Number of bytes of the 0x0100 page to allocate to each user
+ * process as its 6502 return address stack.
+ */
+#ifndef CONFIG_RETURN_STACK_SIZE
+#define CONFIG_RETURN_STACK_SIZE 64
+#endif
+
+/**
+ * @brief Number of bytes of space to allocate to each user process
+ * for its kernel data stack.
+ */
+#ifndef CONFIG_KERNEL_STACK_SIZE
+#define CONFIG_KERNEL_STACK_SIZE 256
+#endif
+
 #endif

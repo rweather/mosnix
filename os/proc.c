@@ -34,7 +34,7 @@ void proc_init(void)
         p->state = PROC_UNUSED;
         STAILQ_INSERT_TAIL(&unused_procs, p, next);
     }
-    current_proc = &(process_table[0]);
+    current_proc = NULL;
 }
 
 static int proc_format_args(struct proc *proc, int argc, char **argv)
@@ -166,7 +166,7 @@ int proc_start_internal
     /* Configure the new process so that it will jump to "func"
      * when it starts executing.  If "func" returns, then arrange
      * to perform an "_exit" system call. */
-    p->context.S = PROC_STACK_SIZE - 1;
+    p->context.S = CONFIG_RETURN_STACK_SIZE - 1;
     proc_push_return_stack(p, (uintptr_t)proc_exit);
     proc_push_return_stack(p, ((uintptr_t)func) + 1);
     proc_push_stack_frame(p, *((uint16_t *)(p->args)));    /* argc */
