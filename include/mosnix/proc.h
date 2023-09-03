@@ -160,13 +160,13 @@ typedef int (*proc_internal_func_t)(int argc, char **argv);
 /**
  * @brief Reference to the current process that is running.
  */
-extern struct proc * volatile current_proc;
+extern struct proc * volatile current_proc ATTR_SECTION_ZP;
 
 /**
  * @brief Non-zero if we are in the kernel and pre-emption should be
  * blocked until we are ready to return to user space.
  */
-extern uint8_t volatile in_kernel;
+extern uint8_t volatile in_kernel ATTR_SECTION_ZP;
 
 /**
  * @brief Initializes the process subsystem of the kernel.

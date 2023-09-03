@@ -8,6 +8,7 @@
 
 #include <mosnix/attributes.h>
 #include <mosnix/proc.h>
+#include <mosnix/printk.h>
 #include <mosnix/sched.h>
 #include <mosnix/syscall.h>
 #include <string.h>
@@ -88,6 +89,7 @@ int proc_create(pid_t ppid, int argc, char **argv, struct proc **proc)
 {
     struct proc *p;
     int err;
+    pid_small_t pid;
 
     /* Find the next available unused process */
     p = STAILQ_FIRST(&unused_procs);
@@ -96,7 +98,9 @@ int proc_create(pid_t ppid, int argc, char **argv, struct proc **proc)
     STAILQ_REMOVE_HEAD(&unused_procs, next);
 
     /* Zero the entire process structure */
+    pid = p->pid;
     memset(p, 0, sizeof(struct proc));
+    p->pid = pid;
     p->ppid = ppid;
 
     /* Format the argc/argv arguments into the process structure */
@@ -105,7 +109,7 @@ int proc_create(pid_t ppid, int argc, char **argv, struct proc **proc)
         return err;
 
     /* Allocate zero page memory to the process and clear it */
-    p->context.zp = (uint8_t *)((p->pid + 1) * PROC_ZP_SIZE);
+    p->context.zp = (uint8_t *)((pid + 1) * PROC_ZP_SIZE);
     memset(p->context.zp, 0, PROC_ZP_SIZE);
 
     /* Process block is ready to go */
