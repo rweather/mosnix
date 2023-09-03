@@ -15,6 +15,10 @@ gentools.print_header("MOSNIX_SYSCALL_H", cplusplus=True, include=["<sys/types.h
 print("/* Generated automatically */")
 print("")
 
+# Help llvm-mos analyse the call graph of systems calls during global analysis.
+print("#define SYS_ATTR extern __attribute__((interrupt, no_isr))")
+print("")
+
 # Print the struct definitions for system call parameters.
 for line in lines:
     if line.startswith('#'):
@@ -41,11 +45,11 @@ for line in lines:
     name = re.sub(r'^_', '', fields[1])
     name = name.replace('%', '')
     if len(fields) <= 3 or fields[3] == 'void':
-        print("/* %3d */ extern int sys_%s(void);" % (int(fields[0]), name))
+        print("/* %3d */ SYS_ATTR int sys_%s(void);" % (int(fields[0]), name))
     elif fields[2] == 'void':
-        print("/* %3d */ extern void sys_%s(struct sys_%s_s *args);" % (int(fields[0]), name, name))
+        print("/* %3d */ SYS_ATTR void sys_%s(struct sys_%s_s *args);" % (int(fields[0]), name, name))
     else:
-        print("/* %3d */ extern int sys_%s(struct sys_%s_s *args);" % (int(fields[0]), name, name))
-print("/* N/A */ extern int sys_notimp(void);")
+        print("/* %3d */ SYS_ATTR int sys_%s(struct sys_%s_s *args);" % (int(fields[0]), name, name))
+print("/* N/A */ SYS_ATTR int sys_notimp(void);")
 
 gentools.print_footer(cplusplus=True)

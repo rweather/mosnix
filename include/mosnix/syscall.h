@@ -18,6 +18,8 @@ extern "C" {
 
 /* Generated automatically */
 
+#define SYS_ATTR extern __attribute__((interrupt, no_isr))
+
 struct sys_read_s {
     int fd;
     void *data;
@@ -71,25 +73,25 @@ struct sys_uname_s {
     struct utsname *buf;
 };
 
-/*   0 */ extern int sys_read(struct sys_read_s *args);
-/*   1 */ extern int sys_write(struct sys_write_s *args);
-/*   2 */ extern int sys_open(struct sys_open_s *args);
-/*   3 */ extern int sys_close(struct sys_close_s *args);
-/*   4 */ extern int sys_lseek(struct sys_lseek_s *args);
-/*  20 */ extern int sys_getpid(void);
-/*  21 */ extern int sys_getppid(void);
-/*  22 */ extern void sys_exit(struct sys_exit_s *args);
-/*  23 */ extern int sys_sched_yield(void);
-/*  30 */ extern int sys_getuid(void);
-/*  31 */ extern int sys_geteuid(void);
-/*  32 */ extern int sys_setuid(struct sys_setuid_s *args);
-/*  33 */ extern int sys_seteuid(struct sys_seteuid_s *args);
-/*  34 */ extern int sys_getgid(void);
-/*  35 */ extern int sys_getegid(void);
-/*  36 */ extern int sys_setgid(struct sys_setgid_s *args);
-/*  37 */ extern int sys_setegid(struct sys_setegid_s *args);
-/* 100 */ extern int sys_uname(struct sys_uname_s *args);
-/* N/A */ extern int sys_notimp(void);
+/*   0 */ SYS_ATTR int sys_read(struct sys_read_s *args);
+/*   1 */ SYS_ATTR int sys_write(struct sys_write_s *args);
+/*   2 */ SYS_ATTR int sys_open(struct sys_open_s *args);
+/*   3 */ SYS_ATTR int sys_close(struct sys_close_s *args);
+/*   4 */ SYS_ATTR int sys_lseek(struct sys_lseek_s *args);
+/*  20 */ SYS_ATTR int sys_getpid(void);
+/*  21 */ SYS_ATTR int sys_getppid(void);
+/*  22 */ SYS_ATTR void sys_exit(struct sys_exit_s *args);
+/*  23 */ SYS_ATTR int sys_sched_yield(void);
+/*  30 */ SYS_ATTR int sys_getuid(void);
+/*  31 */ SYS_ATTR int sys_geteuid(void);
+/*  32 */ SYS_ATTR int sys_setuid(struct sys_setuid_s *args);
+/*  33 */ SYS_ATTR int sys_seteuid(struct sys_seteuid_s *args);
+/*  34 */ SYS_ATTR int sys_getgid(void);
+/*  35 */ SYS_ATTR int sys_getegid(void);
+/*  36 */ SYS_ATTR int sys_setgid(struct sys_setgid_s *args);
+/*  37 */ SYS_ATTR int sys_setegid(struct sys_setegid_s *args);
+/* 100 */ SYS_ATTR int sys_uname(struct sys_uname_s *args);
+/* N/A */ SYS_ATTR int sys_notimp(void);
 
 #ifdef __cplusplus
 }
