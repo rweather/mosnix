@@ -13,7 +13,7 @@ MEMORY {
     zp : ORIGIN = __rc31 + 1, LENGTH = 0
 
     /* Put the shell and its runtime data in the top part of memory */
-    ram (rw) : ORIGIN = 0x8000, LENGTH = 0x2000
+    ram (rw) : ORIGIN = 0x8000, LENGTH = 0x4000
 }
 
 REGION_ALIAS("c_readonly", ram)
@@ -25,6 +25,6 @@ __stack = ORIGIN(ram) + LENGTH(ram);
 
 OUTPUT_FORMAT {
     SHORT(0x8000)
-    SHORT(0x2000)
+    SHORT(0x4000)
     FULL(ram)
 }

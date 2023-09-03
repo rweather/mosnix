@@ -17,7 +17,7 @@ MEMORY {
 
     /* Put the kernel and its runtime data in the top part of memory.
      * User space programs will be loaded to the bottom half of memory. */
-    ram (rw) : ORIGIN = 0xa000, LENGTH = 0x5ff0
+    ram (rw) : ORIGIN = 0xc000, LENGTH = 0x3ff0
 }
 
 REGION_ALIAS("c_readonly", ram)
@@ -36,8 +36,8 @@ user_space_ram_end = 0x8000;
 shell_start = 0x8000;
 
 OUTPUT_FORMAT {
-    SHORT(0xa000)
-    SHORT(__data_end - 0xa000)
+    SHORT(0xc000)
+    SHORT(__data_end - 0xc000)
     TRIM(ram)
 
     SHORT(0xfffa)
