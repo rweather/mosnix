@@ -24,10 +24,13 @@ static struct run_queue runnable = STAILQ_HEAD_INITIALIZER(runnable);
  * @param[in] proc The process to switch to.  Must not be NULL
  * although the previous value of "current_proc" can be NULL.
  *
+ * @return The status or error code that was passed from the current
+ * process to @a proc.
+ *
  * This function will return when the current process can continue
  * from where it left off.
  */
-__attribute__((leaf)) void proc_switch_to(struct proc *proc);
+__attribute__((leaf)) int proc_switch_to(struct proc *proc);
 
 void sched_set_runnable(struct proc *proc)
 {

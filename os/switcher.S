@@ -101,7 +101,7 @@ brk_syscall:
 proc_switch_to:
 ;
 ; Is this the same process as last time?  If so, then we are already in
-; the right process and there is nothing to do.
+; the right process and there is very little to do.
 ;
   lda __rc2
   cmp current_proc
@@ -109,6 +109,14 @@ proc_switch_to:
   lda __rc3
   cmp current_proc+1
   bne .Lswap_out_old
+;
+; Load the A:X value from the process block to return from this function.
+;
+  ldy #2
+  lda (current_proc),y
+  tax
+  dey
+  lda (current_proc),y
   rts
 
 ;
@@ -251,7 +259,7 @@ proc_switch_to:
   sta (current_proc),y
 
 ;
-; Switch to the target process's stack.
+; Switch to the target process's stack and load the A:X value to return.
 ;
 .Lswap_in_switch_stack:
 #if defined(CPU_65C02)
@@ -262,19 +270,11 @@ proc_switch_to:
 #endif
   tax
   txs
-
-;
-; Pop the stack frame, restoring the A:X value we want to return
-; to the interrupted process.
-;
-#if defined(CPU_65C02)
-  plx
-  pla
-#else
-  pla
+  ldy #2
+  lda (current_proc),y
   tax
-  pla
-#endif
+  dey
+  lda (current_proc),y
 
 ;
 ; Now leaving kernel space.  Re-enable preemption and return.

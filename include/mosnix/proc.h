@@ -83,22 +83,6 @@ enum ATTR_ENUM_PACKED proc_state
 #define PROC_KERNEL_ZP_SIZE 12
 
 /**
- * @brief Structure of registers that are saved on the stack for
- * system calls and context switching.
- */
-struct proc_stack_frame
-{
-    /** X index register */
-    uint8_t X;
-
-    /** Accumulator */
-    uint8_t A;
-
-    /** Processor status register */
-    uint8_t P;
-};
-
-/**
  * @brief Saved process state to support context switching.
  */
 struct proc_context
@@ -106,8 +90,8 @@ struct proc_context
     /** Stack pointer */
     uint8_t S;
 
-    /** Address in the zero page of the process's registers. */
-    uint8_t *zp;
+    /** A:X value to pass to the process upon a context switch */
+    int AX;
 
     /** Saved locations from the 6502 return stack when context-switching */
     uint8_t stack[CONFIG_RETURN_STACK_SIZE];
@@ -117,6 +101,9 @@ struct proc_context
 
     /** Callee-saved zero page registers for the kernel */
     uint8_t kzp[PROC_KERNEL_ZP_SIZE];
+
+    /** Address in the zero page of the process's registers. */
+    uint8_t *zp;
 };
 
 /**
@@ -194,6 +181,13 @@ int proc_create(pid_t ppid, int argc, char **argv, struct proc **proc);
  * wait queues that is was a member of.
  */
 void proc_free(struct proc *proc);
+
+/**
+ * @brief Stops the current process.
+ *
+ * @param[in] status The status code to return to the parent process.
+ */
+void proc_stop(int status);
 
 /**
  * @brief Starts a process that is implemented inside the kernel itself.
