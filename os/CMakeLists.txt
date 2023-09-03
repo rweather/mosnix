@@ -6,6 +6,7 @@ set(KERNEL_SOURCES
     ident.c
     main.c
     notimp.c
+    printk.c
     proc.c
     sched.c
     switcher.S
