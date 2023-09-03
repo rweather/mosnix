@@ -10,6 +10,7 @@
 #include <mosnix/syscall.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 /**
  * @brief List of all runnable processes in the system, except for the
@@ -44,6 +45,7 @@ void schedule(void)
     struct proc *proc = STAILQ_FIRST(&runnable);
     if (!proc) {
         /* Nothing is runnable, so the system is dead! */
+        puts("No runnable processes found - halting!");
         _exit(1);
     }
     proc_switch_to(proc);
