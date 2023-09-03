@@ -43,11 +43,10 @@ sched_start:
 ; System call dispatcher.  This is called from the IRQBRK handler
 ; whenever we encounter a BRK instruction.  BRK is our system call trap.
 ;
-; On entry to this function, the stack should be set up as follows
-; (top of stack is to the left):
+; On entry to this function, Y is the system call number times 2, and the
+; stack should be set up as follows (top of stack is to the left):
 ;
-;   65c02:  X A P <return-address>
-;   6502:   Y X A P <return-address>
+;   X A P <return-address>
 ;
 ; Y will be destroyed by this function.  A:X returns the system call result.
 ;
@@ -60,22 +59,9 @@ brk_syscall:
   inc mos8(in_kernel)
 
 ;
-; Save the user stack pointer to the "current_proc" variable.
-;
-  tsx
-  txa
-#if defined(CPU_65C02)
-  sta (current_proc)
-#else
-  ldy #0
-  sta (current_proc),y
-#endif
-
-;
 ; Dispatch the system call.
 ;
-#if defined(CPU_65C02)
-  tax
+  tsx
   lda SYSCALL_TABLE,y
   sta __rc4
   lda SYSCALL_TABLE+1,y
@@ -84,46 +70,19 @@ brk_syscall:
   sta __rc2
   lda CPU_STACK+1,x
   sta __rc3
-#else
-  tay
-  ldx CPU_STACK+1,y
-  lda SYSCALL_TABLE,x
-  sta __rc4
-  lda SYSCALL_TABLE+1,x
-  sta __rc5
-  lda CPU_STACK+3,y
-  sta __rc2
-  lda CPU_STACK+2,y
-  sta __rc3
-#endif
   jsr .Lbrk_dispatch
 
 ;
-; Restore the user stack pointer from the "current_proc" variable.
-; Also arrange to pass A:X back to the caller.
+; Arrange to pass A:X back to the caller.
 ;
 #if defined(CPU_65C02)
+  ply ; Discard the incoming X value from the stack.
+  ply ; Discard the incoming A value from the stack.
+#else
   tay
-  stx __rc3
-  lda (current_proc)
-  tax
-  txs
   pla ; Discard the incoming X value from the stack.
   pla ; Discard the incoming A value from the stack.
   tya
-  ldx __rc3
-#else
-  sta __rc2
-  stx __rc3
-  ldy #0
-  lda (current_proc),y
-  tax
-  txs
-  pla ; Discard the incoming Y value from the stack.
-  pla ; Discard the incoming X value from the stack.
-  pla ; Discard the incoming A value from the stack.
-  lda __rc2
-  ldx __rc3
 #endif
 
 ;
@@ -312,8 +271,6 @@ proc_switch_to:
   plx
   pla
 #else
-  pla
-  tay
   pla
   tax
   pla

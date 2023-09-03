@@ -88,11 +88,6 @@ enum ATTR_ENUM_PACKED proc_state
  */
 struct proc_stack_frame
 {
-#if !defined(CPU_65C02)
-    /** Y index register */
-    uint8_t Y;
-#endif
-
     /** X index register */
     uint8_t X;
 

@@ -30,8 +30,6 @@ _irqbrk:
   lda $0103,x           ; Was this due to a BRK instruction?
   and #$10
   beq .Lno_break
-  tya                   ; Also save Y on the stack.
-  pha
   cli                   ; Re-enable interrupts.
   jmp brk_syscall       ; Handle the system call.
 .Lno_break:
