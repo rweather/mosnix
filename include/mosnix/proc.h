@@ -84,6 +84,10 @@ enum ATTR_ENUM_PACKED proc_state
 
 /**
  * @brief Saved process state to support context switching.
+ *
+ * @note The assembly code in "os/switcher.S" relies upon the layout of
+ * this structure remaining stable.  Do not reorder or add fields unless
+ * "os/switcher.S" is updated to match.
  */
 struct proc_context
 {
@@ -101,9 +105,6 @@ struct proc_context
 
     /** Callee-saved zero page registers for the kernel */
     uint8_t kzp[PROC_KERNEL_ZP_SIZE];
-
-    /** Address in the zero page of the process's registers. */
-    uint8_t *zp;
 };
 
 /**
@@ -111,7 +112,8 @@ struct proc_context
  */
 struct proc
 {
-    /** Saved context information for the process */
+    /** Saved context information for the process.  Must be the first
+     *  field in the process structure. */
     struct proc_context context;
 
     /** Identifier of this process */
@@ -126,6 +128,9 @@ struct proc
 
     /** Queue next pointer */
     STAILQ_ENTRY(proc) next;
+
+    /** Address in the zero page of the process's registers. */
+    uint8_t *zp;
 
     /** Arguments to the process, formatted as an array of strings. */
     char args[CONFIG_ARG_MAX];

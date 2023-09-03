@@ -109,8 +109,8 @@ int proc_create(pid_t ppid, int argc, char **argv, struct proc **proc)
         return err;
 
     /* Allocate zero page memory to the process and clear it */
-    p->context.zp = (uint8_t *)((pid + 1) * PROC_ZP_SIZE);
-    memset(p->context.zp, 0, PROC_ZP_SIZE);
+    p->zp = (uint8_t *)((pid + 1) * PROC_ZP_SIZE);
+    memset(p->zp, 0, PROC_ZP_SIZE);
 
     /* Process block is ready to go */
     *proc = p;
@@ -143,8 +143,8 @@ static inline void proc_push_byte(struct proc *p, uint8_t value)
 
 static inline void proc_set_arg2(struct proc *p, uint16_t value)
 {
-    p->context.zp[2] = (uint8_t)value;
-    p->context.zp[3] = (uint8_t)(value >> 8);
+    p->zp[2] = (uint8_t)value;
+    p->zp[3] = (uint8_t)(value >> 8);
 }
 
 void proc_stop(int status)
