@@ -9,6 +9,7 @@ set(KERNEL_SOURCES
     printk.c
     proc.c
     sched.c
+    sem.c
     switcher.S
     uname.c
 )

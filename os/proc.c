@@ -28,12 +28,12 @@ void proc_init(void)
 {
     struct proc *p;
     pid_small_t pid;
-    STAILQ_INIT(&unused_procs);
+    TAILQ_INIT(&unused_procs);
     for (pid = 1, p = process_table; pid <= CONFIG_PROC_MAX; ++pid, ++p) {
         p->pid = pid;
         p->ppid = PID_UNUSED;
         p->state = PROC_UNUSED;
-        STAILQ_INSERT_TAIL(&unused_procs, p, next);
+        TAILQ_INSERT_TAIL(&unused_procs, p, qptrs);
     }
     current_proc = NULL;
 }
@@ -92,10 +92,10 @@ int proc_create(pid_t ppid, int argc, char **argv, struct proc **proc)
     pid_small_t pid;
 
     /* Find the next available unused process */
-    p = STAILQ_FIRST(&unused_procs);
+    p = TAILQ_FIRST(&unused_procs);
     if (!p)
         return -ENOMEM;
-    STAILQ_REMOVE_HEAD(&unused_procs, next);
+    TAILQ_REMOVE(&unused_procs, p, qptrs);
 
     /* Zero the entire process structure */
     pid = p->pid;
@@ -120,7 +120,7 @@ int proc_create(pid_t ppid, int argc, char **argv, struct proc **proc)
 void proc_free(struct proc *proc)
 {
     proc->state = PROC_UNUSED;
-    STAILQ_INSERT_TAIL(&unused_procs, proc, next);
+    TAILQ_INSERT_TAIL(&unused_procs, proc, qptrs);
 }
 
 static void proc_push_return_stack(struct proc *p, uintptr_t value)

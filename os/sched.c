@@ -16,7 +16,7 @@
  * @brief List of all runnable processes in the system, except for the
  * one that is currently running.
  */
-static struct run_queue runnable = STAILQ_HEAD_INITIALIZER(runnable);
+static struct run_queue runnable = TAILQ_HEAD_INITIALIZER(runnable);
 
 /**
  * @brief Switches to a different process and continues running it.
@@ -34,24 +34,33 @@ __attribute__((leaf)) int proc_switch_to(struct proc *proc);
 
 void sched_set_runnable(struct proc *proc)
 {
-    if (proc != current_proc) {
+    if (proc->state != PROC_RUNNING) {
         proc->state = PROC_RUNNING;
-        STAILQ_INSERT_TAIL(&runnable, proc, next);
+        TAILQ_INSERT_TAIL(&runnable, proc, qptrs);
     }
 }
 
-void schedule(void)
+void sched_remove_runnable(struct proc *proc)
+{
+    if (proc->state == PROC_RUNNING) {
+        proc->state = PROC_NOT_RUNNING;
+        TAILQ_REMOVE(&runnable, proc, qptrs);
+    }
+}
+
+int schedule(void)
 {
     /* TODO: This is very basic and probably not what we want */
 
     /* Find a runnable process and schedule it */
-    struct proc *proc = STAILQ_FIRST(&runnable);
+    struct proc *proc = TAILQ_FIRST(&runnable);
     if (!proc) {
         /* Nothing is runnable, so the system is dead! */
         kputstr("No runnable processes found - halting!\n");
         _exit(1);
     }
     proc_switch_to(proc);
+    return 0;
 }
 
 int sys_sched_yield(void)

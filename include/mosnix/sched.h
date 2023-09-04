@@ -28,9 +28,20 @@ void sched_start(void);
 void sched_set_runnable(struct proc *proc);
 
 /**
- * @brief Schedule the next process to run.
+ * @brief Removes the current process from the run queue.
+ *
+ * @param[in] proc The process.
  */
-void schedule(void);
+void sched_remove_runnable(struct proc *proc);
+
+/**
+ * @brief Schedule the next process to run.
+ *
+ * @return The return status that was passed to this process when it
+ * was woken up from sleep.  If the current process dies, then this
+ * function will never return.
+ */
+int schedule(void);
 
 #ifdef __cplusplus
 }

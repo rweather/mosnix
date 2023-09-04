@@ -11,8 +11,8 @@
 
 #include <mosnix/attributes.h>
 #include <mosnix/config.h>
+#include <mosnix/sem.h>
 #include <sys/types.h>
-#include <sys/queue.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -49,6 +49,10 @@ enum ATTR_ENUM_PACKED proc_state
 
     /** Process is running */
     PROC_RUNNING,
+
+    /** Process is not running and is not on any run queue or sleep queue.
+     *  This is usually a temporary state on the way to some other state. */
+    PROC_NOT_RUNNING,
 
     /** Process is stopped due to job control */
     PROC_STOPPED_JOB_CONTROL,
@@ -126,8 +130,11 @@ struct proc
     /** Current process state */
     enum proc_state state;
 
-    /** Queue next pointer */
-    STAILQ_ENTRY(proc) next;
+    /** Queue next and previous pointers */
+    TAILQ_ENTRY(proc) qptrs;
+
+    /** Semaphore this process is waiting on, or NULL. */
+    struct sem *wait_sem;
 
     /** Address in the zero page of the process's registers. */
     uint8_t *zp;
@@ -135,9 +142,6 @@ struct proc
     /** Arguments to the process, formatted as an array of strings. */
     char args[CONFIG_ARG_MAX];
 };
-
-/* Declare the struct run_queue type */
-STAILQ_HEAD(run_queue, proc);
 
 /**
  * @brief Entry point for a user process that is implemented inside the kernel.
