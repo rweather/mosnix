@@ -139,6 +139,9 @@ struct proc
     /** Address in the zero page of the process's registers. */
     uint8_t *zp;
 
+    /** File descriptor table for the process. */
+    struct file *fd[CONFIG_PROC_FD_MAX];
+
     /** Arguments to the process, formatted as an array of strings. */
     char args[CONFIG_ARG_MAX];
 };
@@ -199,17 +202,20 @@ void proc_free(struct proc *proc);
 void proc_stop(int status);
 
 /**
- * @brief Starts a process that is implemented inside the kernel itself.
+ * @brief Creates an internal process such as the shell that does not
+ * need to be loaded from external media.
  *
  * @param[in[ ppid Identifier for the parent process.
  * @param[in] func Points to the function to invoke for the internal process.
  * @param[in] argc Number of arguments, including the program name.
  * @param[in] argv Points to the argument array, terminated by a NUL.
+ * @param[out] proc Returns a pointer to the new process.
  *
  * @return The process identifier for the new process or an error code.
  */
-int proc_start_internal
-    (pid_t ppid, proc_internal_func_t func, int argc, char **argv);
+int proc_create_internal
+    (pid_t ppid, proc_internal_func_t func, int argc, char **argv,
+     struct proc **proc);
 
 /**
  * @brief Starts the shell process running as pid 1.

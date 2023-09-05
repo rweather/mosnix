@@ -8,9 +8,11 @@
 
 #include <mosnix/attributes.h>
 #include <mosnix/proc.h>
+#include <mosnix/file.h>
 #include <mosnix/printk.h>
 #include <mosnix/sched.h>
 #include <mosnix/syscall.h>
+#include "drivers/tty/console.h"
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -153,16 +155,18 @@ void proc_stop(int status)
     _exit(status);
 }
 
-int proc_start_internal
-    (pid_t ppid, proc_internal_func_t func, int argc, char **argv)
+int proc_create_internal
+    (pid_t ppid, proc_internal_func_t func, int argc, char **argv,
+     struct proc **proc)
 {
     struct proc *p;
     int err;
 
     /* Create the process control block */
-    err = proc_create(ppid, argc, argv, &p);
+    err = proc_create(ppid, argc, argv, proc);
     if (err != 0)
         return err;
+    p = *proc;
 
     /* Configure the new process so that it will jump to "func"
      * when it starts executing.  If "func" returns, then arrange
@@ -185,7 +189,20 @@ int shell_start(int argc, char **argv);
 void proc_start_shell(void)
 {
     static char * const shell_argv[] = {"/bin/sh", 0};
-    proc_start_internal(0, shell_start, 1, (char **)shell_argv);
+    struct proc *p = 0;
+    struct file *console;
+
+    /* Create the shell process; assumed to always succeed */
+    proc_create_internal(0, shell_start, 1, (char **)shell_argv, &p);
+
+    /* Set up the console tty as stdin, stdout, and stderr for the shell */
+    console = file_new();
+    open_console_tty(console);
+    p->fd[0] = console;
+    file_ref(console);
+    p->fd[1] = console;
+    file_ref(console);
+    p->fd[2] = console;
 }
 
 int sys_getpid(void)

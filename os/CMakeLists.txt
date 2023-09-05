@@ -2,7 +2,7 @@
 # List of source files for the kernel.
 set(KERNEL_SOURCES
     dispatch.c
-    fd.c
+    file.c
     ident.c
     main.c
     notimp.c
@@ -12,6 +12,8 @@ set(KERNEL_SOURCES
     sem.c
     switcher.S
     uname.c
+    drivers/tty/console.h
+    drivers/tty/basictty.c
 )
 
 # Build a kernel for "mos-sim" from the "llvm-mos" project.
@@ -34,10 +36,16 @@ add_custom_target(mosnix-sim ALL
 add_dependencies(mosnix-sim kernel-sim shell-sim)
 
 # Build a kernel for Ben Eater's breadboard computer.
+#
+# llvm-mos has some issues with function pointers on 65c02 so for now
+# we use basic 6502 compilation until this can be fixed.
+#
+#       -mcpu=mosw65c02 -DCPU_65C02
+#
 add_executable(kernel-eater ${KERNEL_SOURCES})
 add_dependencies(kernel-eater shell-eater)
 target_compile_options(kernel-eater
-    PUBLIC -mcpu=mosw65c02 -DCPU_65C02 -DMOSNIX_TARGET_EATER=1
+    PUBLIC -DMOSNIX_TARGET_EATER=1
            -DMOSNIX_VERSION=\"${CMAKE_PROJECT_VERSION}\"
            -I${CMAKE_SOURCE_DIR}/target/eater
 )

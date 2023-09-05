@@ -6,6 +6,7 @@
  * information.
  */
 
+#include <mosnix/file.h>
 #include <mosnix/proc.h>
 #include <mosnix/sched.h>
 #include <mosnix/syscall.h>
@@ -14,6 +15,7 @@
 int main(void)
 {
     /* Initialize all kernel subsystems */
+    file_init();
     proc_init();
 
     /* Launch the shell process as our version of "init" */

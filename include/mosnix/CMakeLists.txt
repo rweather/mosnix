@@ -2,6 +2,7 @@
 install(FILES
     attributes.h
     config.h
+    file.h
     printk.h
     proc.h
     sched.h

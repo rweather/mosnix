@@ -16,8 +16,20 @@ extern "C" {
 #endif
 
 #define SYS_CLOCKS_PER_SEC 1000000UL
-
 extern clock_t sys_clock(void);
+
+/* mos-sim target uses the basic tty driver as its console */
+#define CONFIG_CONSOLE_BASIC_TTY 1
+/* mos-sim echos input characters whether we want it or not */
+#define CONFIG_CHRIN_ECHO 1
+/* mos-sim handles LF to CRLF conversion for us */
+#define CONFIG_CHROUT_LF_HANDLING 1
+/* mos-sim does not support __chrin_no_wait() */
+#define CONFIG_CHROUT_NO_WAIT 0
+extern int getchar(void);
+extern void __putchar(char c);
+#define __chrin() (getchar())
+#define __chrout(c) (__putchar((c)))
 
 #ifdef __cplusplus
 }

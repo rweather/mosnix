@@ -6,10 +6,10 @@ static void print_banner(void)
 {
     struct utsname uts;
     uname(&uts);
-    printf("%s %s %s\n", uts.sysname, uts.release, uts.machine);
+    printf("\n%s %s %s\n", uts.sysname, uts.release, uts.machine);
 }
 
-#if defined(MOSNIX_TARGET_SIM)
+#if 1 /*defined(MOSNIX_TARGET_SIM)*/
 /* The simulator echos within the host system as it doesn't have cbreak mode. */
 #define echo_char(c) do { ; } while (0)
 #else

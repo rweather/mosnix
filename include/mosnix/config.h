@@ -29,6 +29,13 @@
 #endif
 
 /**
+ * @brief Maximum number of file descriptors in the per-process fd table.
+ */
+#ifndef CONFIG_PROC_FD_MAX
+#define CONFIG_PROC_FD_MAX 16
+#endif
+
+/**
  * @brief Maximum bytes for argv command-line strings and the array overhead.
  */
 #ifndef CONFIG_ARG_MAX
