@@ -2,6 +2,8 @@
 # List of source files for the shell.
 set(SHELL_SOURCES
     main.c
+    print.c
+    print.h
 )
 
 # Build a shell for "mos-sim" from the "llvm-mos" project.

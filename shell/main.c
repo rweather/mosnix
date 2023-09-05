@@ -1,4 +1,5 @@
 
+#include "print.h"
 #include <stdio.h>
 #include <sys/utsname.h>
 
@@ -6,7 +7,13 @@ static void print_banner(void)
 {
     struct utsname uts;
     uname(&uts);
-    printf("\n%s %s %s\n", uts.sysname, uts.release, uts.machine);
+    print_nl();
+    print_string(uts.sysname);
+    print_char(' ');
+    print_string(uts.release);
+    print_char(' ');
+    print_string(uts.machine);
+    print_nl();
 }
 
 #if 1 /*defined(MOSNIX_TARGET_SIM)*/
@@ -60,13 +67,14 @@ int main(int argc, char *argv[])
     print_banner();
 
     for (;;) {
-        putchar('#');
-        putchar(' ');
+        print_string("# ");
         if (!get_line(buffer, sizeof(buffer)))
             break;
-        printf("ECHO: %s\n", buffer);
+        print_string("ECHO: ");
+        print_string(buffer);
+        print_nl();
     }
-    putchar('\n');
+    print_nl();
 
     return 0;
 }
