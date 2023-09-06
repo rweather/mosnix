@@ -31,12 +31,12 @@ typedef char *caddr_t;
 typedef unsigned long clock_t;
 typedef long daddr_t;
 typedef unsigned int dev_t;
-typedef unsigned int gid_t;
-typedef unsigned int id_t;
+typedef unsigned short gid_t;
+typedef unsigned short id_t;
 typedef unsigned long long ino_t;
 typedef int key_t;
-typedef unsigned long mode_t;
-typedef unsigned int nlink_t;
+typedef unsigned short mode_t;
+typedef unsigned short nlink_t;
 typedef long long off_t;
 typedef off_t loff_t;
 typedef int pid_t;
@@ -44,7 +44,7 @@ typedef unsigned long sigset_t;
 typedef int ssize_t;
 typedef long suseconds_t;
 typedef long long time_t;
-typedef unsigned int uid_t;
+typedef unsigned short uid_t;
 typedef unsigned long useconds_t;
 
 #ifdef __cplusplus
