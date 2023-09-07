@@ -21,6 +21,8 @@ extern ssize_t read(int fd, void *data, size_t size);
 extern ssize_t write(int fd, const void *data, size_t size);
 extern int close(int fd);
 extern off_t lseek(int fd, off_t offset, int whence);
+extern int dup(int oldfd);
+extern int dup2(int oldfd, int newfd);
 extern pid_t getpid(void);
 extern pid_t getppid(void);
 extern void _exit(int status);

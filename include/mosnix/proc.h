@@ -142,6 +142,9 @@ struct proc
     /** File descriptor table for the process. */
     struct file *fd[CONFIG_PROC_FD_MAX];
 
+    /** FD_CLOEXEC flags for all file descriptors. */
+    uint8_t cloexec[CONFIG_PROC_FD_MAX];
+
     /** Arguments to the process, formatted as an array of strings. */
     char args[CONFIG_ARG_MAX];
 };

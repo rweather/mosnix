@@ -151,6 +151,74 @@ int sys_lseek(struct sys_lseek_s *args)
     return result;
 }
 
+static int sys_dup_scan(int oldfd, int newfd)
+{
+    /* Get the file descriptor to be duplicated */
+    struct file *file = file_get(oldfd);
+    if (!file)
+        return -EBADF;
+
+    /* Validate the starting point for the scan */
+    if (newfd < 0 || newfd >= CONFIG_PROC_FD_MAX)
+        return -EBADF;
+
+    /* Scan for a free slot in the process's file descriptor table */
+    while (newfd < CONFIG_PROC_FD_MAX) {
+        if (!(current_proc->fd[newfd])) {
+            /* Add a reference to the file descriptor and duplicate it */
+            file_ref(file);
+            current_proc->fd[newfd] = file;
+
+            /* Reset FD_CLOEXEC on the new file descriptor */
+            current_proc->cloexec[newfd] = 0;
+            return newfd;
+        }
+        ++newfd;
+    }
+    return -EMFILE;
+}
+
+int sys_dup(struct sys_dup_s *args)
+{
+    return sys_dup_scan(args->oldfd, 0);
+}
+
+int sys_dup2(struct sys_dup2_s *args)
+{
+    int newfd = args->newfd;
+    struct file *file;
+    struct file *file2;
+
+    /* Get the file descriptor to be duplicated */
+    file = file_get(args->oldfd);
+    if (!file)
+        return -EBADF;
+
+    /* Validate the new file descriptor */
+    if (newfd < 0 || newfd >= CONFIG_PROC_FD_MAX)
+        return -EBADF;
+
+    /* If the new file descriptor is the same as the old, nothing to do */
+    if (newfd == args->oldfd)
+        return newfd;
+
+    /* Add a reference to the descriptor to be duplicated */
+    file_ref(file);
+
+    /* Remove a reference from the descriptor that is being replaced,
+     * which may result in it being closed. */
+    file2 = file_get(newfd);
+    if (file2)
+        file_deref(file2);
+
+    /* Replace the descriptor for newfd */
+    current_proc->fd[newfd] = file;
+
+    /* Reset the FD_CLOEXEC flag on the new file descriptor */
+    current_proc->cloexec[newfd] = 0;
+    return newfd;
+}
+
 int sys_fcntl(struct sys_fcntl_s *args)
 {
     /* Get the file descriptor structure */
@@ -162,27 +230,22 @@ int sys_fcntl(struct sys_fcntl_s *args)
     switch (args->cmd) {
     case F_DUPFD:
         /* Duplicate this file descriptor to a minimum new fd */
-        /* TODO */
-        break;
+        return sys_dup_scan(args->fd, args->value);
 
     case F_GETFD:
-        /* Get the state of the FD_CLOEXEC flag */
-        if (file->flags & O_CLOEXEC)
-            return FD_CLOEXEC;
-        else
-            return 0;
+        /* Get the state of the FD_CLOEXEC flag.  When a file descriptor is
+         * duplicated, FD_CLOEXEC is reset in the duplicate so we need to
+         * store this flag outside of the "struct file" object. */
+        return current_proc->cloexec[args->fd];
 
     case F_SETFD:
         /* Set the state of the FD_CLOEXEC flag */
-        if (args->value & FD_CLOEXEC)
-            file->flags |= O_CLOEXEC;
-        else
-            file->flags &= ~O_CLOEXEC;
+        current_proc->cloexec[args->fd] = (args->value & FD_CLOEXEC);
         break;
 
     case F_GETFL:
         /* Get the open flags on this file descriptor */
-        return file->flags & ~O_CLOEXEC;
+        return file->flags;
 
     case F_SETFL:
         /* The only flag we can change is O_NONBLOCK; ignore all others */

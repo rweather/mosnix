@@ -55,6 +55,15 @@ struct sys_fcntl_s {
     int value;
 };
 
+struct sys_dup_s {
+    int oldfd;
+};
+
+struct sys_dup2_s {
+    int oldfd;
+    int newfd;
+};
+
 struct sys_exit_s {
     int status;
 };
@@ -85,6 +94,8 @@ struct sys_uname_s {
 /*   3 */ SYS_ATTR int sys_close(struct sys_close_s *args);
 /*   4 */ SYS_ATTR int sys_lseek(struct sys_lseek_s *args);
 /*   5 */ SYS_ATTR int sys_fcntl(struct sys_fcntl_s *args);
+/*   6 */ SYS_ATTR int sys_dup(struct sys_dup_s *args);
+/*   7 */ SYS_ATTR int sys_dup2(struct sys_dup2_s *args);
 /*  20 */ SYS_ATTR int sys_getpid(void);
 /*  21 */ SYS_ATTR int sys_getppid(void);
 /*  22 */ SYS_ATTR void sys_exit(struct sys_exit_s *args);

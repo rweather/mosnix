@@ -102,11 +102,6 @@ struct file_operations
 };
 
 /**
- * @brief Internal bit that stores the FD_CLOEXEC flag.
- */
-#define O_CLOEXEC 0x8000
-
-/**
  * @brief Information about an open file descriptor.
  */
 struct file

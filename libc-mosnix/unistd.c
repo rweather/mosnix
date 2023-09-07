@@ -35,6 +35,16 @@ off_t lseek(int fd, off_t offset, int whence)
         return -1;
 }
 
+int dup(int oldfd)
+{
+    return syscall(SYS_dup, oldfd);
+}
+
+int dup2(int oldfd, int newfd)
+{
+    return syscall(SYS_dup2, oldfd, newfd);
+}
+
 pid_t getpid(void)
 {
     return syscall(SYS_getpid);

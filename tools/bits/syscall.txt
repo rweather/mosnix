@@ -9,6 +9,8 @@
 3   |close          |int        |int fd
 4   |lseek          |off_t      |int fd|off_t offset|int whence|>off_t *result
 5   |fcntl%         |int        |int fd|int cmd|int value
+6   |dup            |int        |int oldfd
+7   |dup2           |int        |int oldfd|int newfd
 #
 # Processes
 #
