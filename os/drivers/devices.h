@@ -16,13 +16,22 @@ extern "C" {
 #endif
 
 /**
- * @brief Opens a device by its identifier.
+ * @brief Opens a character device by its identifier.
  *
  * @param[out] file The file descriptor to initialize for the device.
  *
  * @return Zero on success or a negative error code.
  */
-int device_open(dev_t dev, struct file *file);
+int char_device_open(dev_t dev, struct file *file);
+
+/**
+ * @brief Opens a block device by its identifier.
+ *
+ * @param[out] file The file descriptor to initialize for the device.
+ *
+ * @return Zero on success or a negative error code.
+ */
+int block_device_open(dev_t dev, struct file *file);
 
 #ifdef __cplusplus
 }

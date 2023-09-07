@@ -30,20 +30,35 @@ struct device_info
     device_open_func_t open;    /**< Function to use to open the device */
 };
 
-/** Table of all known devices. */
-static struct device_info const devices[] = {
+/** Table of all known character devices. */
+static struct device_info const char_devices[] = {
     {DEV_NULL,          open_dev_null},
     {DEV_ZERO,          open_dev_zero},
     {DEV_FULL,          open_dev_full},
     {0,                 0},
 };
 
-int device_open(dev_t dev, struct file *file)
+/** Table of all known block devices. */
+static struct device_info const block_devices[] = {
+    {0,                 0},
+};
+
+static int device_open
+    (dev_t dev, struct file *file, const struct device_info *info)
 {
-    const struct device_info *info;
-    for (info = devices; info->dev; ++info) {
+    for (; info->dev; ++info) {
         if (info->dev == dev)
             return info->open(file);
     }
     return -ENXIO;
+}
+
+int char_device_open(dev_t dev, struct file *file)
+{
+    return device_open(dev, file, char_devices);
+}
+
+int block_device_open(dev_t dev, struct file *file)
+{
+    return device_open(dev, file, block_devices);
 }
