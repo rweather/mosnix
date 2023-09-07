@@ -13,6 +13,10 @@ set(KERNEL_SOURCES
     sem.c
     switcher.S
     uname.c
+    drivers/devices.h
+    drivers/devices.c
+    drivers/misc/misc.h
+    drivers/misc/null.c
     drivers/tty/console.h
     drivers/tty/basictty.c
 )

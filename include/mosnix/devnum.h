@@ -30,6 +30,7 @@ enum {
 /* Character memory devices */
 #define DEV_NULL makedev(DEV_MAJOR_MEMORY, 3) /**< /dev/null */
 #define DEV_ZERO makedev(DEV_MAJOR_MEMORY, 5) /**< /dev/zero */
+#define DEV_FULL makedev(DEV_MAJOR_MEMORY, 7) /**< /dev/full */
 
 /* TTY devices */
 #define DEV_TTY0    makedev(DEV_MAJOR_TTY, 0)     /**< /dev/tty0 */

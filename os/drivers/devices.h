@@ -6,8 +6,8 @@
  * information.
  */
 
-#ifndef MOSNIX_DRIVERS_TTY_CONSOLE_H
-#define MOSNIX_DRIVERS_TTY_CONSOLE_H
+#ifndef MOSNIX_DRIVERS_DEVICES_H
+#define MOSNIX_DRIVERS_DEVICES_H
 
 #include <mosnix/file.h>
 
@@ -16,13 +16,13 @@ extern "C" {
 #endif
 
 /**
- * @brief Opens the primary console tty.
+ * @brief Opens a device by its identifier.
  *
- * @param[out] file The file descriptor to initialize for the console.
+ * @param[out] file The file descriptor to initialize for the device.
  *
  * @return Zero on success or a negative error code.
  */
-int open_console_tty(struct file *file);
+int device_open(dev_t dev, struct file *file);
 
 #ifdef __cplusplus
 }
