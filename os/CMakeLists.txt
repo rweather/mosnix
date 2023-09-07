@@ -4,6 +4,7 @@ set(KERNEL_SOURCES
     dispatch.c
     file.c
     ident.c
+    kmalloc.c
     main.c
     notimp.c
     printk.c

@@ -7,6 +7,7 @@
  */
 
 #include <mosnix/file.h>
+#include <mosnix/kmalloc.h>
 #include <mosnix/proc.h>
 #include <mosnix/sched.h>
 #include <mosnix/syscall.h>
@@ -15,6 +16,7 @@
 int main(void)
 {
     /* Initialize all kernel subsystems */
+    kmalloc_init();
     file_init();
     proc_init();
 

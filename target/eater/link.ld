@@ -24,7 +24,11 @@ PROVIDE(nmi = _irq_default);
 
 /* Tell the kernel where its usable user space RAM lies */
 user_space_ram_start = 0x1000;
-user_space_ram_end = 0x3800;
+user_space_ram_end = 0x3000;
+
+/* Tell the kernel where the buffer cache is located in RAM */
+buffer_cache_ram_start = 0x3000;
+buffer_cache_ram_end = 0x3800;
 
 /* Tell the kernel where the in-ROM shell code lies */
 shell_start = 0x8000;
