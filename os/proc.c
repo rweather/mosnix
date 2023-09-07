@@ -12,6 +12,7 @@
 #include <mosnix/printk.h>
 #include <mosnix/sched.h>
 #include <mosnix/syscall.h>
+#include <bits/fcntl.h>
 #include "drivers/tty/console.h"
 #include <string.h>
 #include <stdlib.h>
@@ -196,7 +197,7 @@ void proc_start_shell(void)
     proc_create_internal(0, shell_start, 1, (char **)shell_argv, &p);
 
     /* Set up the console tty as stdin, stdout, and stderr for the shell */
-    console = file_new();
+    console = file_new(O_RDWR, 0660);
     open_console_tty(console);
     p->fd[0] = console;
     file_ref(console);

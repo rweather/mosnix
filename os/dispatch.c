@@ -16,7 +16,7 @@ void * const SYSCALL_TABLE[128] __attribute__((retain)) = {
     /*   2 */ (void *)sys_open,
     /*   3 */ (void *)sys_close,
     /*   4 */ (void *)sys_lseek,
-    /*   5 */ (void *)sys_notimp,
+    /*   5 */ (void *)sys_fcntl,
     /*   6 */ (void *)sys_notimp,
     /*   7 */ (void *)sys_notimp,
     /*   8 */ (void *)sys_notimp,

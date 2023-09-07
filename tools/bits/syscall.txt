@@ -5,9 +5,10 @@
 #
 0   |read           |ssize_t    |int fd|void *data|size_t size
 1   |write          |ssize_t    |int fd|const void *data|size_t size
-2   |open           |int        |const char *filename|int flags|int mode
+2   |open%          |int        |const char *path|int flags|unsigned int mode
 3   |close          |int        |int fd
 4   |lseek          |off_t      |int fd|off_t offset|int whence|>off_t *result
+5   |fcntl%         |int        |int fd|int cmd|int value
 #
 # Processes
 #

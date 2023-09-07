@@ -102,12 +102,23 @@ struct file_operations
 };
 
 /**
+ * @brief Internal bit that stores the FD_CLOEXEC flag.
+ */
+#define O_CLOEXEC 0x8000
+
+/**
  * @brief Information about an open file descriptor.
  */
 struct file
 {
     /** Reference count on this file structure */
     file_ref_count_t count;
+
+    /** Flags on the file; O_RDONLY, O_CREAT, etc */
+    unsigned int flags;
+
+    /** Permissions for the file */
+    mode_t mode;
 
     /** Pointer to the operations table for the file descriptor */
     const struct file_operations *op;
@@ -157,13 +168,16 @@ struct file *file_get(int fd);
 /**
  * @brief Allocates a new file structure from the global file descriptor table.
  *
+ * @param[in] flags The file open flags.
+ * @param[in] mode The permission mode.
+ *
  * @return A pointer to the new file structure, or NULL if the global file
  * descriptor table is full.
  *
  * The returned structure will have the reference count set to 1, and the
  * operation structure will be set to all-default handler functions.
  */
-struct file *file_new(void);
+struct file *file_new(int flags, mode_t mode);
 
 /**
  * @brief Default close function for a file descriptor.

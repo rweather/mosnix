@@ -9,6 +9,7 @@
 #include <mosnix/syscall.h>
 #include <mosnix/file.h>
 #include <mosnix/proc.h>
+#include <bits/fcntl.h>
 #include <errno.h>
 
 /* Common file operations */
@@ -39,13 +40,15 @@ struct file *file_get(int fd)
     return current_proc->fd[fd];
 }
 
-struct file *file_new(void)
+struct file *file_new(int flags, mode_t mode)
 {
     unsigned index;
     struct file *file = global_fd;
     for (index = 0; index < CONFIG_FD_MAX; ++index, ++file) {
         if (file->count == 0) {
             file->count = 1;
+            file->flags = flags;
+            file->mode = mode;
             file->op = &file_default_operations;
             return file;
         }
@@ -146,6 +149,50 @@ int sys_lseek(struct sys_lseek_s *args)
     /* Dereference the file and return */
     file_deref(file);
     return result;
+}
+
+int sys_fcntl(struct sys_fcntl_s *args)
+{
+    /* Get the file descriptor structure */
+    struct file *file = file_get(args->fd);
+    if (!file)
+        return -EBADF;
+
+    /* Determine what needs to be done */
+    switch (args->cmd) {
+    case F_DUPFD:
+        /* Duplicate this file descriptor to a minimum new fd */
+        /* TODO */
+        break;
+
+    case F_GETFD:
+        /* Get the state of the FD_CLOEXEC flag */
+        if (file->flags & O_CLOEXEC)
+            return FD_CLOEXEC;
+        else
+            return 0;
+
+    case F_SETFD:
+        /* Set the state of the FD_CLOEXEC flag */
+        if (args->value & FD_CLOEXEC)
+            file->flags |= O_CLOEXEC;
+        else
+            file->flags &= ~O_CLOEXEC;
+        break;
+
+    case F_GETFL:
+        /* Get the open flags on this file descriptor */
+        return file->flags & ~O_CLOEXEC;
+
+    case F_SETFL:
+        /* The only flag we can change is O_NONBLOCK; ignore all others */
+        if (args->value & O_NONBLOCK)
+            file->flags |= O_NONBLOCK;
+        else
+            file->flags &= ~O_NONBLOCK;
+        break;
+    }
+    return -EINVAL;
 }
 
 /* Default implementations of the file operations */

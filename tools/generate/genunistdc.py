@@ -10,7 +10,7 @@ file = open(sys.argv[1], 'r')
 lines = file.readlines()
 file.close()
 
-gentools.print_header("", cplusplus=False, include=["<unistd.h>", "<sys/syscall.h>", "<sys/utsname.h>"])
+gentools.print_header("", cplusplus=False, include=["<unistd.h>", "<sys/syscall.h>"])
 
 print("/* Generated automatically */")
 print("")
@@ -21,6 +21,9 @@ for line in lines:
     fields = line.strip().split('|')
     fields = [s.strip() for s in fields]
     name = fields[1]
+    if name.endswith('%'):
+        # Don't declare this name in "unistd.c".
+        continue
     name = name.replace('%', '')
     returnType = fields[2]
     if len(fields) <= 3 or fields[3] == 'void':

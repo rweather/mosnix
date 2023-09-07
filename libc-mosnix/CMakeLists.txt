@@ -1,10 +1,14 @@
 
 # Build the main libc library for MOSnix user space applications.
 add_library(libc-mosnix STATIC
+    fcntl.c
     getchar.c
+    open.c
     putchar.c
     syscall.S
+    uname.c
     unistd.c
+    yield.c
 )
 
 # Build the startup.o file for MOSnix user space applications.

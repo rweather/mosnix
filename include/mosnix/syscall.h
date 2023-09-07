@@ -33,9 +33,9 @@ struct sys_write_s {
 };
 
 struct sys_open_s {
-    const char *filename;
+    const char *path;
     int flags;
-    int mode;
+    unsigned int mode;
 };
 
 struct sys_close_s {
@@ -47,6 +47,12 @@ struct sys_lseek_s {
     off_t offset;
     int whence;
     off_t *result;
+};
+
+struct sys_fcntl_s {
+    int fd;
+    int cmd;
+    int value;
 };
 
 struct sys_exit_s {
@@ -78,6 +84,7 @@ struct sys_uname_s {
 /*   2 */ SYS_ATTR int sys_open(struct sys_open_s *args);
 /*   3 */ SYS_ATTR int sys_close(struct sys_close_s *args);
 /*   4 */ SYS_ATTR int sys_lseek(struct sys_lseek_s *args);
+/*   5 */ SYS_ATTR int sys_fcntl(struct sys_fcntl_s *args);
 /*  20 */ SYS_ATTR int sys_getpid(void);
 /*  21 */ SYS_ATTR int sys_getppid(void);
 /*  22 */ SYS_ATTR void sys_exit(struct sys_exit_s *args);

@@ -16,6 +16,7 @@
 #define SYS_open 2
 #define SYS_close 3
 #define SYS_lseek 4
+#define SYS_fcntl 5
 #define SYS_getpid 20
 #define SYS_getppid 21
 #define SYS_exit 22

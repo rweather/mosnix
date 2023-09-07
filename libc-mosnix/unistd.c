@@ -8,7 +8,6 @@
 
 #include <unistd.h>
 #include <sys/syscall.h>
-#include <sys/utsname.h>
 
 /* Generated automatically */
 
@@ -20,11 +19,6 @@ ssize_t read(int fd, void *data, size_t size)
 ssize_t write(int fd, const void *data, size_t size)
 {
     return syscall(SYS_write, fd, data, size);
-}
-
-int open(const char *filename, int flags, int mode)
-{
-    return syscall(SYS_open, filename, flags, mode);
 }
 
 int close(int fd)
@@ -55,11 +49,6 @@ void _exit(int status)
 {
     syscall(SYS_exit, status);
     while (1) ; /* stop compiler complaining about reachable unreachable code */
-}
-
-int sched_yield(void)
-{
-    return syscall(SYS_sched_yield);
 }
 
 uid_t getuid(void)
@@ -100,10 +89,5 @@ int setgid(gid_t gid)
 int setegid(gid_t gid)
 {
     return syscall(SYS_setegid, gid);
-}
-
-int uname(struct utsname *buf)
-{
-    return syscall(SYS_uname, buf);
 }
 
