@@ -32,9 +32,16 @@ struct device_info
 
 /** Table of all known character devices. */
 static struct device_info const char_devices[] = {
+    /* /dev/null, /dev/zero, and /dev/full */
     {DEV_NULL,          open_dev_null},
     {DEV_ZERO,          open_dev_zero},
     {DEV_FULL,          open_dev_full},
+
+    /* There are multiple standard names for the console tty */
+    {DEV_TTY,           open_console_tty},
+    {DEV_TTY0,          open_console_tty},
+    {DEV_CONSOLE,       open_console_tty},
+
     {0,                 0},
 };
 
