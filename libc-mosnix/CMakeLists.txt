@@ -1,10 +1,13 @@
 
 # Build the main libc library for MOSnix user space applications.
 add_library(libc-mosnix STATIC
+    dirent.c
     fcntl.c
     getchar.c
+    mkdir.c
     open.c
     putchar.c
+    stat.c
     syscall.S
     uname.c
     unistd.c

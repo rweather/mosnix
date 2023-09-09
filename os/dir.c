@@ -47,3 +47,94 @@ int sys_chdir(struct sys_chdir_s *args)
     strcpy_constrained(current_proc->cwd, temp_path, sizeof(current_proc->cwd));
     return 0;
 }
+
+int sys_mkdir(struct sys_mkdir_s *args)
+{
+    /* TODO */
+    (void)args;
+    return -ENOSYS;
+}
+
+int sys_rmdir(struct sys_rmdir_s *args)
+{
+    /* TODO */
+    (void)args;
+    return -ENOSYS;
+}
+
+int sys_symlink(struct sys_symlink_s *args)
+{
+    /* TODO */
+    (void)args;
+    return -ENOSYS;
+}
+
+int sys_readlink(struct sys_readlink_s *args)
+{
+    /* TODO */
+    (void)args;
+    return -ENOSYS;
+}
+
+int sys_mknod(struct sys_mknod_s *args)
+{
+    /* TODO */
+    (void)args;
+    return -ENOSYS;
+}
+
+int sys_chmod(struct sys_chmod_s *args)
+{
+    /* TODO */
+    (void)args;
+    return -ENOSYS;
+}
+
+int sys_chown(struct sys_chown_s *args)
+{
+    /* TODO */
+    (void)args;
+    return -ENOSYS;
+}
+
+int sys_unlink(struct sys_unlink_s *args)
+{
+    /* TODO */
+    (void)args;
+    return -ENOSYS;
+}
+
+int sys_stat(struct sys_stat_s *args)
+{
+    /* TODO */
+    (void)args;
+    return -ENOSYS;
+}
+
+int sys_lstat(struct sys_lstat_s *args)
+{
+    /* TODO */
+    (void)args;
+    return -ENOSYS;
+}
+
+int sys_fstat(struct sys_fstat_s *args)
+{
+    /* TODO */
+    (void)args;
+    return -ENOSYS;
+}
+
+int sys_opendir(struct sys_opendir_s *args)
+{
+    /* TODO */
+    (void)args;
+    return -ENOSYS;
+}
+
+int sys_readdir(struct sys_readdir_s *args)
+{
+    /* TODO */
+    (void)args;
+    return -ENOSYS;
+}

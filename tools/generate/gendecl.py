@@ -10,7 +10,7 @@ file = open(sys.argv[1], 'r')
 lines = file.readlines()
 file.close()
 
-gentools.print_header("MOSNIX_SYSCALL_H", cplusplus=True, include=["<sys/types.h>", "<sys/utsname.h>"])
+gentools.print_header("MOSNIX_SYSCALL_H", cplusplus=True, include=["<sys/types.h>", "<sys/stat.h>", "<sys/utsname.h>"])
 
 print("/* Generated automatically */")
 print("")
