@@ -1,5 +1,5 @@
 #
-# Filesystem
+# File descriptors
 #
 #Nr |Name           |Return     |Argument Types and Names
 #
@@ -7,28 +7,33 @@
 1   |write          |ssize_t    |int fd|const void *data|size_t size
 2   |open%          |int        |const char *path|int flags|unsigned int mode
 3   |close          |int        |int fd
-4   |lseek          |off_t      |int fd|off_t offset|int whence|>off_t *result
+4   |lseek          |off_t      |int fd|off_t offset|int whence|>off_t result
 5   |fcntl%         |int        |int fd|int cmd|int value
 6   |dup            |int        |int oldfd
 7   |dup2           |int        |int oldfd|int newfd
 #
+# Filesystem operations
+#
+20  |getcwd         |char *     |char *buf|size_t size|>char* result
+21  |chdir          |int        |const char *path
+#
 # Processes
 #
-20  |getpid         |pid_t      |void
-21  |getppid        |pid_t      |void
-22  |_exit          |void       |int status
-23  |sched_yield%   |int        |void
+50  |getpid         |pid_t      |void
+51  |getppid        |pid_t      |void
+52  |_exit          |void       |int status
+53  |sched_yield%   |int        |void
 #
 # Identification
 #
-30  |getuid         |uid_t      |void
-31  |geteuid        |uid_t      |void
-32  |setuid         |int        |uid_t uid
-33  |seteuid        |int        |uid_t uid
-34  |getgid         |gid_t      |void
-35  |getegid        |gid_t      |void
-36  |setgid         |int        |gid_t gid
-37  |setegid        |int        |gid_t gid
+60  |getuid         |uid_t      |void
+61  |geteuid        |uid_t      |void
+62  |setuid         |int        |uid_t uid
+63  |seteuid        |int        |uid_t uid
+64  |getgid         |gid_t      |void
+65  |getegid        |gid_t      |void
+66  |setgid         |int        |gid_t gid
+67  |setegid        |int        |gid_t gid
 #
 # Other
 #

@@ -11,12 +11,14 @@
 #include <mosnix/proc.h>
 #include <mosnix/sched.h>
 #include <mosnix/syscall.h>
+#include "fs/ram/ramfs.h"
 #include <stdio.h>
 
 int main(void)
 {
     /* Initialize all kernel subsystems */
     kmalloc_init();
+    ramfs_init();
     file_init();
     proc_init();
 

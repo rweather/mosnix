@@ -23,6 +23,8 @@ extern int close(int fd);
 extern off_t lseek(int fd, off_t offset, int whence);
 extern int dup(int oldfd);
 extern int dup2(int oldfd, int newfd);
+extern char* getcwd(char *buf, size_t size);
+extern int chdir(const char *path);
 extern pid_t getpid(void);
 extern pid_t getppid(void);
 extern void _exit(int status);

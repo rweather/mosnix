@@ -24,7 +24,7 @@ void file_init(void)
         file->count = 0;
 }
 
-int file_deref(struct file *file)
+ATTR_NOINLINE int file_deref(struct file *file)
 {
     --(file->count);
     if (file->count <= 0)
@@ -33,14 +33,14 @@ int file_deref(struct file *file)
         return 0;
 }
 
-struct file *file_get(int fd)
+ATTR_NOINLINE struct file *file_get(int fd)
 {
     if (fd < 0 || fd >= CONFIG_PROC_FD_MAX)
         return 0;
     return current_proc->fd[fd];
 }
 
-struct file *file_new(int flags, mode_t mode)
+ATTR_NOINLINE struct file *file_new(int flags, mode_t mode)
 {
     unsigned index;
     struct file *file = global_fd;
@@ -153,6 +153,8 @@ int sys_lseek(struct sys_lseek_s *args)
 
 static int sys_dup_scan(int oldfd, int newfd)
 {
+    struct file **fd;
+
     /* Get the file descriptor to be duplicated */
     struct file *file = file_get(oldfd);
     if (!file)
@@ -163,17 +165,19 @@ static int sys_dup_scan(int oldfd, int newfd)
         return -EBADF;
 
     /* Scan for a free slot in the process's file descriptor table */
+    fd = current_proc->fd + newfd;
     while (newfd < CONFIG_PROC_FD_MAX) {
-        if (!(current_proc->fd[newfd])) {
+        if (!(*fd)) {
             /* Add a reference to the file descriptor and duplicate it */
             file_ref(file);
-            current_proc->fd[newfd] = file;
+            *fd = file;
 
             /* Reset FD_CLOEXEC on the new file descriptor */
             current_proc->cloexec[newfd] = 0;
             return newfd;
         }
         ++newfd;
+        ++fd;
     }
     return -EMFILE;
 }

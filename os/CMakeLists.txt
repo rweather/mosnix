@@ -1,9 +1,11 @@
 
 # List of source files for the kernel.
 set(KERNEL_SOURCES
+    dir.c
     dispatch.c
     file.c
     ident.c
+    inode.c
     kmalloc.c
     main.c
     notimp.c
@@ -13,12 +15,15 @@ set(KERNEL_SOURCES
     sem.c
     switcher.S
     uname.c
+    util.c
     drivers/devices.h
     drivers/devices.c
     drivers/misc/misc.h
     drivers/misc/null.c
     drivers/tty/console.h
     drivers/tty/basictty.c
+    fs/ram/ramfs.h
+    fs/ram/ramfs.c
 )
 
 # Build a kernel for "mos-sim" from the "llvm-mos" project.

@@ -34,6 +34,8 @@ void kmalloc_init(void);
  * @return The new buffer of exactly KMALLOC_BUF_SIZE bytes in length,
  * or NULL if the buffer cache has been exhausted.
  *
+ * The return buffer will be initialized to all-zeroes.
+ *
  * @note The returned pointer may be in a memory page that is currently
  * swapped out of the CPU's view of memory.  Callers must use
  * kmalloc_buf_lock() and kmalloc_buf_unlock() to gate access to buffers.
@@ -65,6 +67,18 @@ void kmalloc_buf_free(void *buf);
  * @brief Unlocks access to the kernel buffer cache.
  */
 #define kmalloc_buf_unlock() do { ; } while (0)
+
+/**
+ * @brief Compile-time check that a structure can fit in a buffer cache entry.
+ *
+ * @param[in] type The name of the type, without the "struct".
+ *
+ * This will give a compile-time error if "struct type" will not fit within
+ * the bounds of a buffer cache entry.
+ */
+#define kmalloc_buf_size_check(type) \
+    typedef char type##_buf_size_check \
+        [(sizeof(struct type) <= KMALLOC_BUF_SIZE) * 2 - 1]
 
 /**
  * @brief Allocates data in process space to load and relocate a process.

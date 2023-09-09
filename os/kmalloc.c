@@ -7,7 +7,9 @@
  */
 
 #include <mosnix/kmalloc.h>
+#include <mosnix/attributes.h>
 #include <stdint.h>
+#include <string.h>
 
 /* Start and end of user space process RAM from the linker script */
 extern void *user_space_ram_start;
@@ -35,17 +37,18 @@ void kmalloc_init(void)
     }
 }
 
-void *kmalloc_buf_alloc(void)
+ATTR_NOINLINE void *kmalloc_buf_alloc(void)
 {
     void *buf = free_buffers;
     if (buf) {
         free_buffers = *((void **)buf);
+        memset(buf, 0, KMALLOC_BUF_SIZE);
         return buf;
     }
     return 0;
 }
 
-void kmalloc_buf_free(void *buf)
+ATTR_NOINLINE void kmalloc_buf_free(void *buf)
 {
     if (buf && buf >= ((void *)&buffer_cache_ram_start) &&
             buf < ((void *)&buffer_cache_ram_end)) {
@@ -54,7 +57,7 @@ void kmalloc_buf_free(void *buf)
     }
 }
 
-void *kmalloc_proc_alloc(size_t size)
+ATTR_NOINLINE void *kmalloc_proc_alloc(size_t size)
 {
     /* TODO */
     (void)size;

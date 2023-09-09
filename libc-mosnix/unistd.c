@@ -45,6 +45,20 @@ int dup2(int oldfd, int newfd)
     return syscall(SYS_dup2, oldfd, newfd);
 }
 
+char* getcwd(char *buf, size_t size)
+{
+    char* result;
+    if (syscall(SYS_getcwd, buf, size, &result) == 0)
+        return result;
+    else
+        return 0;
+}
+
+int chdir(const char *path)
+{
+    return syscall(SYS_chdir, path);
+}
+
 pid_t getpid(void)
 {
     return syscall(SYS_getpid);

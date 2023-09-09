@@ -13,5 +13,6 @@
 #define ATTR_ENUM_PACKED __attribute__((packed))
 #define ATTR_SECTION_NOINIT __attribute__((section(".noinit")))
 #define ATTR_SECTION_ZP __attribute__((section(".zp")))
+#define ATTR_NOINLINE __attribute__((noinline))
 
 #endif

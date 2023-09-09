@@ -64,6 +64,16 @@ struct sys_dup2_s {
     int newfd;
 };
 
+struct sys_getcwd_s {
+    char *buf;
+    size_t size;
+    char* *result;
+};
+
+struct sys_chdir_s {
+    const char *path;
+};
+
 struct sys_exit_s {
     int status;
 };
@@ -96,18 +106,20 @@ struct sys_uname_s {
 /*   5 */ SYS_ATTR int sys_fcntl(struct sys_fcntl_s *args);
 /*   6 */ SYS_ATTR int sys_dup(struct sys_dup_s *args);
 /*   7 */ SYS_ATTR int sys_dup2(struct sys_dup2_s *args);
-/*  20 */ SYS_ATTR int sys_getpid(void);
-/*  21 */ SYS_ATTR int sys_getppid(void);
-/*  22 */ SYS_ATTR void sys_exit(struct sys_exit_s *args);
-/*  23 */ SYS_ATTR int sys_sched_yield(void);
-/*  30 */ SYS_ATTR int sys_getuid(void);
-/*  31 */ SYS_ATTR int sys_geteuid(void);
-/*  32 */ SYS_ATTR int sys_setuid(struct sys_setuid_s *args);
-/*  33 */ SYS_ATTR int sys_seteuid(struct sys_seteuid_s *args);
-/*  34 */ SYS_ATTR int sys_getgid(void);
-/*  35 */ SYS_ATTR int sys_getegid(void);
-/*  36 */ SYS_ATTR int sys_setgid(struct sys_setgid_s *args);
-/*  37 */ SYS_ATTR int sys_setegid(struct sys_setegid_s *args);
+/*  20 */ SYS_ATTR int sys_getcwd(struct sys_getcwd_s *args);
+/*  21 */ SYS_ATTR int sys_chdir(struct sys_chdir_s *args);
+/*  50 */ SYS_ATTR int sys_getpid(void);
+/*  51 */ SYS_ATTR int sys_getppid(void);
+/*  52 */ SYS_ATTR void sys_exit(struct sys_exit_s *args);
+/*  53 */ SYS_ATTR int sys_sched_yield(void);
+/*  60 */ SYS_ATTR int sys_getuid(void);
+/*  61 */ SYS_ATTR int sys_geteuid(void);
+/*  62 */ SYS_ATTR int sys_setuid(struct sys_setuid_s *args);
+/*  63 */ SYS_ATTR int sys_seteuid(struct sys_seteuid_s *args);
+/*  64 */ SYS_ATTR int sys_getgid(void);
+/*  65 */ SYS_ATTR int sys_getegid(void);
+/*  66 */ SYS_ATTR int sys_setgid(struct sys_setgid_s *args);
+/*  67 */ SYS_ATTR int sys_setegid(struct sys_setegid_s *args);
 /* 100 */ SYS_ATTR int sys_uname(struct sys_uname_s *args);
 /* N/A */ SYS_ATTR int sys_notimp(void);
 

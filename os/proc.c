@@ -115,6 +115,14 @@ int proc_create(pid_t ppid, int argc, char **argv, struct proc **proc)
     p->zp = (uint8_t *)((pid + 1) * PROC_ZP_SIZE);
     memset(p->zp, 0, PROC_ZP_SIZE);
 
+    /* Set the current working directory to the same as the parent,
+     * or set it to "/root" for the initial shell process. */
+    if (ppid) {
+        memcpy(p->cwd, process_table[ppid - 1].cwd, sizeof(p->cwd));
+    } else {
+        memcpy(p->cwd, "/root", 6);
+    }
+
     /* Process block is ready to go */
     *proc = p;
     return 0;

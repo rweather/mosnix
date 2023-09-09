@@ -7,59 +7,53 @@
  */
 
 #include <mosnix/syscall.h>
+#include <mosnix/proc.h>
 #include <errno.h>
-
-/* For now, everyone is root.  Please Unix responsibly! */
-
-static int sys_getid(void)
-{
-    return 0;
-}
-
-static int sys_setid(id_t id)
-{
-    if (id != 0)
-        return -EINVAL;
-    else
-        return 0;
-}
 
 int sys_getuid(void)
 {
-    return sys_getid();
+    return current_proc->uid;
 }
 
 int sys_geteuid(void)
 {
-    return sys_getid();
+    return current_proc->euid;
 }
 
 int sys_setuid(struct sys_setuid_s *args)
 {
-    return sys_setid(args->uid);
+    /* Not supported at present */
+    (void)args;
+    return -EPERM;
 }
 
 int sys_seteuid(struct sys_seteuid_s *args)
 {
-    return sys_setid(args->uid);
+    /* Not supported at present */
+    (void)args;
+    return -EPERM;
 }
 
 int sys_getgid(void)
 {
-    return sys_getid();
+    return current_proc->gid;
 }
 
 int sys_getegid(void)
 {
-    return sys_getid();
+    return current_proc->egid;
 }
 
 int sys_setgid(struct sys_setgid_s *args)
 {
-    return sys_setid(args->gid);
+    /* Not supported at present */
+    (void)args;
+    return -EPERM;
 }
 
 int sys_setegid(struct sys_setegid_s *args)
 {
-    return sys_setid(args->gid);
+    /* Not supported at present */
+    (void)args;
+    return -EPERM;
 }

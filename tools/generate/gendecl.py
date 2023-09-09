@@ -31,7 +31,8 @@ for line in lines:
         print("struct sys_%s_s {" % name)
         for field in fields[3:]:
             if field.startswith(">"):
-                field = field[1:]
+                field2 = field[1:].split(' ')
+                field = field2[0] + ' *' + field2[1]
             print("    %s;" % field)
         print("};")
         print("")

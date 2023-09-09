@@ -145,6 +145,21 @@ struct proc
     /** FD_CLOEXEC flags for all file descriptors. */
     uint8_t cloexec[CONFIG_PROC_FD_MAX];
 
+    /** User that owns this process */
+    uid_t uid;
+
+    /** Effective user for permission checking */
+    uid_t euid;
+
+    /** Group that owns this process */
+    gid_t gid;
+
+    /** Effective group for permission checking */
+    gid_t egid;
+
+    /** Current working directory for the process. */
+    char cwd[CONFIG_PATH_MAX];
+
     /** Arguments to the process, formatted as an array of strings. */
     char args[CONFIG_ARG_MAX];
 };

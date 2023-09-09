@@ -38,12 +38,15 @@ for line in lines:
     else:
         returnType = fields[2]
         returnName = ''
+        returnValue = "-1"
         last = fields[len(fields)-1]
         if last.startswith('>'):
             last = last[1:]
             args = fields[3:len(fields)-1]
             returnType = last.split(' ')[0]
-            returnName = last.split('*')[1]
+            returnName = last.split(' ')[1]
+            if '*' in returnType:
+                returnValue = "0"
         else:
             args = fields[3:]
         argNames = []
@@ -56,7 +59,7 @@ for line in lines:
             print("    if (syscall(SYS_%s, %s, &%s) == 0)" % (re.sub(r'^_', '', name), ", ".join(argNames), returnName))
             print("        return %s;" % returnName)
             print("    else")
-            print("        return -1;")
+            print("        return %s;" % returnValue)
         elif returnType == 'void':
             print("    syscall(SYS_%s, %s);" % (re.sub(r'^_', '', name), ", ".join(argNames)))
             print("    while (1) ; /* stop compiler complaining about reachable unreachable code */")

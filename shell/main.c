@@ -1,7 +1,10 @@
 
 #include "print.h"
 #include <stdio.h>
+#include <unistd.h>
 #include <sys/utsname.h>
+
+static char buffer[128];
 
 static void print_banner(void)
 {
@@ -14,16 +17,8 @@ static void print_banner(void)
     print_char(' ');
     print_string(uts.machine);
     print_nl();
+    print_nl();
 }
-
-#if 1 /*defined(MOSNIX_TARGET_SIM)*/
-/* The simulator echos within the host system as it doesn't have cbreak mode. */
-#define echo_char(c) do { ; } while (0)
-#else
-#define echo_char(c) putchar((c))
-#endif
-
-static char buffer[128];
 
 static int get_line(char *buf, size_t size)
 {
@@ -34,25 +29,15 @@ static int get_line(char *buf, size_t size)
         if (ch < 0) {
             return 0;
         } else if (ch == '\r' || ch == '\n') {
-            echo_char('\n');
             break;
         } else if (ch == '\b' || ch == 0x7F) {
             if (posn > 0) {
-                echo_char('\b');
-                echo_char(' ');
-                echo_char('\b');
                 --posn;
             }
         } else if (ch == 0x15) { /* CTRL-U */
-            while (posn > 0) {
-                echo_char('\b');
-                echo_char(' ');
-                echo_char('\b');
-                --posn;
-            }
+            posn = 0;
         } else if (ch >= ' ' && posn < (size - 1U)) {
             buf[posn++] = (char)ch;
-            echo_char((char)ch);
         }
     }
     buf[posn] = '\0';
@@ -67,9 +52,16 @@ int main(int argc, char *argv[])
     print_banner();
 
     for (;;) {
+        /* Print the current working directory and the prompt */
+        getcwd(buffer, sizeof(buffer));
+        print_string(buffer);
         print_string("# ");
+
+        /* Get a line of input */
         if (!get_line(buffer, sizeof(buffer)))
             break;
+
+        /* Process the input line */
         print_string("ECHO: ");
         print_string(buffer);
         print_nl();

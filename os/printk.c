@@ -7,11 +7,12 @@
  */
 
 #include <mosnix/printk.h>
+#include <mosnix/attributes.h>
 #include <stdint.h>
 
 static char const hexchars[] = "0123456789abcdef";
 
-__attribute__((noinline)) void kputstr(const char *s)
+ATTR_NOINLINE void kputstr(const char *s)
 {
     if (s) {
         char c;
@@ -21,7 +22,7 @@ __attribute__((noinline)) void kputstr(const char *s)
     }
 }
 
-__attribute__((noinline)) void kputquoted(const char *s, size_t limit)
+ATTR_NOINLINE void kputquoted(const char *s, size_t limit)
 {
     if (s) {
         char c;
@@ -51,7 +52,7 @@ __attribute__((noinline)) void kputquoted(const char *s, size_t limit)
     }
 }
 
-__attribute__((noinline)) void kputhex(unsigned int value)
+ATTR_NOINLINE void kputhex(unsigned int value)
 {
     kputchar('0');
     kputchar('x');

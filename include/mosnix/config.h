@@ -68,4 +68,20 @@
 #define CONFIG_KERNEL_STACK_SIZE 256
 #endif
 
+/**
+ * @brief Maximum number of bytes in a filesystem path, including the
+ * terminating NUL.
+ */
+#ifndef CONFIG_PATH_MAX
+#define CONFIG_PATH_MAX 64
+#endif
+
+/**
+ * @brief Maximum depth for resolving symbolic links before concluding
+ * that we probably have a loop.
+ */
+#ifndef CONFIG_MAX_SYMLINK_DEPTH
+#define CONFIG_MAX_SYMLINK_DEPTH 64
+#endif
+
 #endif

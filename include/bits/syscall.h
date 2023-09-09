@@ -19,18 +19,20 @@
 #define SYS_fcntl 5
 #define SYS_dup 6
 #define SYS_dup2 7
-#define SYS_getpid 20
-#define SYS_getppid 21
-#define SYS_exit 22
-#define SYS_sched_yield 23
-#define SYS_getuid 30
-#define SYS_geteuid 31
-#define SYS_setuid 32
-#define SYS_seteuid 33
-#define SYS_getgid 34
-#define SYS_getegid 35
-#define SYS_setgid 36
-#define SYS_setegid 37
+#define SYS_getcwd 20
+#define SYS_chdir 21
+#define SYS_getpid 50
+#define SYS_getppid 51
+#define SYS_exit 52
+#define SYS_sched_yield 53
+#define SYS_getuid 60
+#define SYS_geteuid 61
+#define SYS_setuid 62
+#define SYS_seteuid 63
+#define SYS_getgid 64
+#define SYS_getegid 65
+#define SYS_setgid 66
+#define SYS_setegid 67
 #define SYS_uname 100
 
 #endif
