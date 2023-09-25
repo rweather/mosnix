@@ -2,6 +2,7 @@
 add_library(target-eater STATIC
     reset.S
     serial.S
+    spi.S
     systick.S
     target.c
 )

@@ -11,6 +11,8 @@
 #include <mosnix/proc.h>
 #include <mosnix/sched.h>
 #include <mosnix/syscall.h>
+#include <mosnix/target.h>
+#include "drivers/spi/spi.h"
 #include "fs/ram/ramfs.h"
 #include <stdio.h>
 
@@ -20,6 +22,9 @@ int main(void)
     kmalloc_init();
     ramfs_init();
     file_init();
+#if CONFIG_SPI
+    spi_init();
+#endif
     proc_init();
 
     /* Launch the shell process as our version of "init" */

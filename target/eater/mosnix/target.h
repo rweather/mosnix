@@ -30,6 +30,11 @@ int __chrin(void);
 int __chrin_no_wait(void);
 void __chrout(char c);
 
+/* eater target may have an SPI interface on PORTA of the VIA */
+#define CONFIG_SPI 1
+/* eater target may have an SD card module on the SPI interface */
+#define CONFIG_SD 1
+
 #ifdef __cplusplus
 }
 #endif

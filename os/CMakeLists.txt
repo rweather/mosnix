@@ -19,6 +19,7 @@ set(KERNEL_SOURCES
     drivers/devices.c
     drivers/misc/misc.h
     drivers/misc/null.c
+    drivers/spi/spi.h
     drivers/tty/console.h
     drivers/tty/basictty.c
     fs/ram/ramfs.h
@@ -28,6 +29,7 @@ set(KERNEL_SOURCES
 # Build a kernel for "mos-sim" from the "llvm-mos" project.
 add_executable(kernel-sim ${KERNEL_SOURCES})
 add_dependencies(kernel-sim shell-sim)
+target_include_directories(kernel-sim PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 target_compile_options(kernel-sim
     PUBLIC -DMOSNIX_TARGET_SIM=1
            -DMOSNIX_VERSION=\"${CMAKE_PROJECT_VERSION}\"
@@ -53,6 +55,7 @@ add_dependencies(mosnix-sim kernel-sim shell-sim)
 #
 add_executable(kernel-eater ${KERNEL_SOURCES})
 add_dependencies(kernel-eater shell-eater)
+target_include_directories(kernel-eater PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 target_compile_options(kernel-eater
     PUBLIC -DMOSNIX_TARGET_EATER=1
            -DMOSNIX_VERSION=\"${CMAKE_PROJECT_VERSION}\"
