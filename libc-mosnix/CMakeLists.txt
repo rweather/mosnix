@@ -4,10 +4,12 @@ add_library(libc-mosnix STATIC
     dirent.c
     fcntl.c
     getchar.c
+    getopt.c
     mkdir.c
     open.c
     putchar.c
     stat.c
+    strerror.c
     syscall.S
     uname.c
     unistd.c

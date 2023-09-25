@@ -84,4 +84,22 @@
 #define CONFIG_MAX_SYMLINK_DEPTH 64
 #endif
 
+/**
+ * @def CONFIG_SYMLINK
+ * @brief Define to 1 to allow the use of symbolic links in the kernel.
+ */
+#ifndef CONFIG_SYMLINK
+#define CONFIG_SYMLINK 0
+#endif
+
+/**
+ * @def CONFIG_ACCESS_UID
+ * @brief Define to 1 to allow the use of uid and gid access checks.
+ *
+ * If this is defined to 0, then root is the only user in the system.
+ */
+#ifndef CONFIG_ACCESS_UID
+#define CONFIG_ACCESS_UID 0
+#endif
+
 #endif

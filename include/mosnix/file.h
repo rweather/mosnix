@@ -16,6 +16,13 @@
 extern "C" {
 #endif
 
+/* Standard seek modes */
+#ifndef SEEK_SET
+#define SEEK_SET 0
+#define SEEK_CUR 1
+#define SEEK_END 2
+#endif
+
 /**
  * @typedef file_ref_count_t
  * @brief Reference count on a file object.
@@ -33,6 +40,7 @@ typedef long file_ref_count_t;
 #endif
 
 struct file;
+struct inode;
 
 /**
  * @brief Table of operations on a file descriptor.
@@ -117,12 +125,13 @@ struct file
 
     /** Pointer to the operations table for the file descriptor */
     const struct file_operations *op;
-};
 
-/**
- * @brief File descriptor handlers that perform all-default behaviours.
- */
-extern const struct file_operations file_default_operations;
+    /** Pointer to the filesystem inode, or NULL if not in a filesystem */
+    struct inode *inode;
+
+    /** Current seek position in the file, if it is seekable */
+    off_t posn;
+};
 
 /**
  * @brief Initializes the file descriptor subsystem.
@@ -161,6 +170,17 @@ int file_deref(struct file *file);
 struct file *file_get(int fd);
 
 /**
+ * @brief Puts a file structure into the file descriptor table for the
+ * current process.
+ *
+ * @param[in] file The file structure to put.
+ *
+ * @return Zero on success, or -EMFILE if there is no space in the
+ * file descriptor table.
+ */
+int file_put(struct file *file);
+
+/**
  * @brief Allocates a new file structure from the global file descriptor table.
  *
  * @param[in] flags The file open flags.
@@ -173,6 +193,18 @@ struct file *file_get(int fd);
  * operation structure will be set to all-default handler functions.
  */
 struct file *file_new(int flags, mode_t mode);
+
+/**
+ * @brief Opens a file.
+ *
+ * @param[in] path File pathname to open.
+ * @param[in] flags Flags to use to open the file.
+ * @param[in] mode Permission mode files, including the file type;
+ * such as S_IFREG or S_IFDIR.
+ *
+ * @return File descriptor on success, or a negative error code otherwise.
+ */
+int file_open(const char *path, int flags, mode_t mode);
 
 /**
  * @brief Default close function for a file descriptor.

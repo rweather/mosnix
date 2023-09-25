@@ -15,7 +15,7 @@ MEMORY {
   ram : ORIGIN = 0x200, LENGTH = 0x1000 - 0x200
 
   /* Put the kernel's code into ROM */
-  rom : ORIGIN = 0xc000, LENGTH = 0x3ffa
+  rom : ORIGIN = 0xb000, LENGTH = 0x4ffa
 }
 
 /* Provide default IRQ and NMI handlers if the program doesn't have them. */

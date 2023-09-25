@@ -32,8 +32,20 @@ extern "C" {
 /* Information about a directory entry */
 struct dirent
 {
+    /* Note: In this implementation, d_ino is the file size for
+     * regular files or the device number for special files. */
     ino_t d_ino;
+
+    /* Custom to this implementation: modification time */
+    time_t d_mtime_np;
+
+    /* Custom to this implementation: permission bits on the file */
+    mode_t d_mode_np;
+
+    /* Type of file; see DT_x macros above */
     u_char d_type;
+
+    /* Name of the file */
     char d_name[DIRENT_NAME_MAX];
 };
 

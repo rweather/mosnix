@@ -1,9 +1,17 @@
 
 # List of source files for the shell.
 set(SHELL_SOURCES
+    cd.c
+    command.h
+    command.c
+    div10.S
+    ls.c
     main.c
     print.c
     print.h
+    pwd.c
+    rootfs.c
+    uname.c
 )
 
 # Build a shell for "mos-sim" from the "llvm-mos" project.

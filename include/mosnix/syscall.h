@@ -135,10 +135,8 @@ struct sys_opendir_s {
     const char *path;
 };
 
-struct sys_readdir_s {
-    int fd;
-    void *data;
-    size_t size;
+struct sys_umask_s {
+    mode_t mask;
 };
 
 struct sys_exit_s {
@@ -165,6 +163,11 @@ struct sys_uname_s {
     struct utsname *buf;
 };
 
+struct sys_strerror_s {
+    int errnum;
+    char* *result;
+};
+
 /*   0 */ SYS_ATTR int sys_read(struct sys_read_s *args);
 /*   1 */ SYS_ATTR int sys_write(struct sys_write_s *args);
 /*   2 */ SYS_ATTR int sys_open(struct sys_open_s *args);
@@ -187,7 +190,7 @@ struct sys_uname_s {
 /*  30 */ SYS_ATTR int sys_stat(struct sys_stat_s *args);
 /*  31 */ SYS_ATTR int sys_lstat(struct sys_lstat_s *args);
 /*  32 */ SYS_ATTR int sys_opendir(struct sys_opendir_s *args);
-/*  33 */ SYS_ATTR int sys_readdir(struct sys_readdir_s *args);
+/*  33 */ SYS_ATTR int sys_umask(struct sys_umask_s *args);
 /*  50 */ SYS_ATTR int sys_getpid(void);
 /*  51 */ SYS_ATTR int sys_getppid(void);
 /*  52 */ SYS_ATTR void sys_exit(struct sys_exit_s *args);
@@ -201,6 +204,7 @@ struct sys_uname_s {
 /*  66 */ SYS_ATTR int sys_setgid(struct sys_setgid_s *args);
 /*  67 */ SYS_ATTR int sys_setegid(struct sys_setegid_s *args);
 /* 100 */ SYS_ATTR int sys_uname(struct sys_uname_s *args);
+/* 101 */ SYS_ATTR int sys_strerror(struct sys_strerror_s *args);
 /* N/A */ SYS_ATTR int sys_notimp(void);
 
 #ifdef __cplusplus

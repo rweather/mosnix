@@ -33,7 +33,7 @@
 #define SYS_stat 30
 #define SYS_lstat 31
 #define SYS_opendir 32
-#define SYS_readdir 33
+#define SYS_umask 33
 #define SYS_getpid 50
 #define SYS_getppid 51
 #define SYS_exit 52
@@ -47,5 +47,6 @@
 #define SYS_setgid 66
 #define SYS_setegid 67
 #define SYS_uname 100
+#define SYS_strerror 101
 
 #endif

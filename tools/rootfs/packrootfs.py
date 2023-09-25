@@ -5,7 +5,6 @@
 
 import sys
 import os
-import pprint
 
 # Mode bits.
 S_IFMT      = 0xF000
@@ -39,8 +38,13 @@ DIR_CURRENT = 2
 DIR_PARENT  = 3
 DIR_MOUNT   = 4
 
-# Packed filesystem that is being built.
-packed = []
+copyright = """/*
+ * Copyright (c) 2023 Rhys Weatherley
+ *
+ * Licensed under the Apache License, Version 2.0 with LLVM Exceptions,
+ * See https://github.com/rweater/mosnix/blob/main/LICENSE for license
+ * information.
+ */"""
 
 # Parse a device number.
 def parse_device_number(s):
@@ -49,20 +53,19 @@ def parse_device_number(s):
 
 # Walk a directory and collect up all files and directories within it.
 def walk(abspath, relpath):
-    global packed
     nodes = []
-    nodes.append({'name': '.', 'props': {
-        'mode': S_IRUSR | S_IRGRP | S_IROTH | S_IXUSR | S_IXGRP | S_IXOTH | S_IFDIR,
-        'dirtype': DIR_CURRENT,
-        'devnum': 0,
-        'content': []
-    }})
-    nodes.append({'name': '..', 'props': {
-        'mode': S_IRUSR | S_IRGRP | S_IROTH | S_IXUSR | S_IXGRP | S_IXOTH | S_IFDIR,
-        'dirtype': DIR_PARENT,
-        'devnum': 0,
-        'content': []
-    }})
+    #nodes.append({'name': '.', 'props': {
+    #    'mode': S_IRUSR | S_IRGRP | S_IROTH | S_IXUSR | S_IXGRP | S_IXOTH | S_IFDIR,
+    #    'dirtype': DIR_CURRENT,
+    #    'devnum': 0,
+    #    'content': []
+    #}})
+    #nodes.append({'name': '..', 'props': {
+    #    'mode': S_IRUSR | S_IRGRP | S_IROTH | S_IXUSR | S_IXGRP | S_IXOTH | S_IFDIR,
+    #    'dirtype': DIR_PARENT,
+    #    'devnum': 0,
+    #    'content': []
+    #}})
     for name in sorted(os.listdir(abspath)):
         if name == "README.md":
             continue
@@ -137,8 +140,45 @@ def walk(abspath, relpath):
         }})
     return nodes
 
+def build_directory(tree, path):
+    if isinstance(tree, str):
+        if len(tree) > 0:
+            # TODO: auto-mounting
+            (devname, fstype) = tree.split(',')
+            print('    /*check_error(mount("%s", "%s", "%s", 0, 0));*/' % (devname, path, fstype))
+        return
+    for node in tree:
+        mode = node['props']['mode']
+        nodetype = mode & S_IFMT
+        name = path + "/" + node['name']
+        content = node['props']['content']
+        if nodetype == S_IFDIR:
+            print('    check_error(mkdir("%s", %04o));' % (name, mode & 0x1FF))
+            build_directory(content, name)
+        elif nodetype == S_IFLNK:
+            print('    check_error(symlink("%s", "%s"));' % (content, name))
+        elif nodetype == S_IFCHR or nodetype == S_IFBLK:
+            devnum = node['props']['devnum']
+            print('    check_error(mknod("%s", %06o, 0x%04x));' % (name, mode & (0x1FF | S_IFMT), devnum))
+
 tree = walk(sys.argv[1], '')
 
-# TODO
-pp = pprint.PrettyPrinter(depth=10)
-pp.pprint(tree)
+print(copyright)
+print("")
+print('#include <unistd.h>')
+print('#include <sys/stat.h>')
+print('#include "print.h"')
+print("")
+print("/* Generated automatically */")
+print("")
+print("#define check_error(call) \\")
+print("    do { \\")
+print("        if ((call) < 0) \\")
+print('            return -1; \\')
+print("    } while (0)")
+print("")
+print("int make_rootfs(void)")
+print("{")
+build_directory(tree, '')
+print("    return 0;")
+print("}")

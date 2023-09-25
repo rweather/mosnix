@@ -16,12 +16,22 @@ extern "C" {
 #endif
 
 /**
+ * @brief Maximum amount of data in a ramfs_data object.
+ */
+#define RAMFS_MAX_DATA 16
+
+/**
+ * @brief Maximum size of a directory name in a ramfs_dirent object.
+ */
+#define RAMFS_MAX_NAME 13
+
+/**
  * @brief Fragment of data for a file or symbolic link.
  */
 struct ramfs_data
 {
     /** Data within this fragment of the file or symbolic link */
-    u_char data[16];
+    u_char data[RAMFS_MAX_DATA];
 
     /** Next data fragment within the file or symbolic link */
     struct ramfs_data *next;
@@ -36,7 +46,7 @@ struct ramfs_dirent
     u_char namelen;
 
     /** Name of the directory entry, not NUL-terminated */
-    char name[13];
+    char name[RAMFS_MAX_NAME];
 
     /** Points to the inode associated with the directory entry */
     struct inode *inode;

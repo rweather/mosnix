@@ -8,15 +8,14 @@ set(KERNEL_SOURCES
     inode.c
     kmalloc.c
     main.c
-    notimp.c
     printk.c
     proc.c
     sched.c
     sem.c
+    strerror.c
     switcher.S
     uname.c
     util.c
-    drivers/devices.h
     drivers/devices.c
     drivers/misc/misc.h
     drivers/misc/null.c

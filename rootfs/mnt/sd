@@ -1,1 +1,1 @@
-mount,/dev/mmcblk0
+mount,/dev/mmcblk0,fat32

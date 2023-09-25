@@ -6,10 +6,10 @@
  * information.
  */
 
-#include "devices.h"
+#include <mosnix/devices.h>
+#include <mosnix/devnum.h>
 #include "misc/misc.h"
 #include "tty/console.h"
-#include <mosnix/devnum.h>
 #include <errno.h>
 
 /**

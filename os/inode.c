@@ -7,17 +7,26 @@
  */
 
 #include <mosnix/inode.h>
+#include <mosnix/config.h>
 #include <mosnix/attributes.h>
 #include <mosnix/proc.h>
 #include <mosnix/util.h>
+#include <mosnix/printk.h>
 #include <sys/stat.h>
 #include <bits/fcntl.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
 
+/** Temporary pathname buffer, to keep it off the stack */
+char temp_path[CONFIG_PATH_MAX] ATTR_SECTION_NOINIT;
+
+#if CONFIG_SYMLINK
+
 /** Temporary symbolic link read buffer, to keep it off the stack */
 static char symlink_buffer[CONFIG_PATH_MAX] ATTR_SECTION_NOINIT;
+
+#endif
 
 ATTR_NOINLINE struct inode *inode_alloc
     (const struct inode_operations *operations)
@@ -99,6 +108,7 @@ static ATTR_NOINLINE int inode_resolve_relative
         if ((posn + len) >= outlen)
             return -ENAMETOOLONG;
         memcpy(out + posn, pathname, len);
+        posn += len;
         isdir = 0;
 
         /* Skip to the next pathname component */
@@ -139,6 +149,8 @@ ATTR_NOINLINE int inode_path_to_abs
     return inode_resolve_relative(out, outlen, posn, pathname);
 }
 
+#if CONFIG_SYMLINK
+
 ATTR_NOINLINE int inode_symlink_to_abs
     (char *out, size_t outlen, const char *pathname)
 {
@@ -172,8 +184,10 @@ ATTR_NOINLINE int inode_symlink_to_abs
     return inode_resolve_relative(out, outlen, posn, pathname);
 }
 
-int inode_lookup(struct inode **inode, struct inode **dir, char *pathname,
-                 int oflag, mode_t mode, u_char follow)
+#endif /* CONFIG_SYMLINK */
+
+int inode_lookup(struct inode **inode, char *pathname, int oflag,
+                 mode_t mode, u_char follow)
 {
     struct inode *node = inode_get_root();
     struct inode *child;
@@ -181,11 +195,13 @@ int inode_lookup(struct inode **inode, struct inode **dir, char *pathname,
     const char *name;
     u_char is_last;
     int error;
+#if CONFIG_SYMLINK
     unsigned symlink_depth = 0;
+#endif
 
-    /* Clear the inode return values */
-    *inode = NULL;
-    *dir = NULL;
+    /* Clear the inode return value */
+    if (inode)
+        *inode = NULL;
 
     /* Walk the directory tree */
     posn = 1; /* Skip the leading '/' */
@@ -220,11 +236,24 @@ int inode_lookup(struct inode **inode, struct inode **dir, char *pathname,
                     inode_deref(node);
                     return error;
                 }
+                if (!(node->op->mknod)) {
+                    /* Filesystem is read-only */
+                    inode_deref(node);
+                    return -EROFS;
+                }
 
-                /* Return the directory to the caller so they can
-                 * create the new inode with the correct options. */
-                *dir = node;
-                return 1;
+                /* Create the new inode with the correct options. */
+                error = node->op->mknod(&child, node, name, namelen, mode);
+                inode_deref(node);
+                if (error < 0) {
+                    return error;
+                }
+                if (inode) {
+                    *inode = child;
+                } else {
+                    inode_deref(child);
+                }
+                return 1; /* Indicate that a new node was created */
             }
         }
         if (error < 0) {
@@ -238,6 +267,7 @@ int inode_lookup(struct inode **inode, struct inode **dir, char *pathname,
 
         /* Is the child a symbolic link? */
         if (S_ISLNK(node->mode)) {
+#if CONFIG_SYMLINK
             if (is_last && !follow) {
                 /* Stop here with the symbolic link, not the linked-to node */
                 break;
@@ -278,6 +308,12 @@ int inode_lookup(struct inode **inode, struct inode **dir, char *pathname,
             inode_deref(node);
             node = inode_get_root();
             continue;
+#else /* !CONFIG_SYMLINK */
+            /* Symbolic links are not supported */
+            (void)follow;
+            inode_deref(node);
+            return -EINVAL;
+#endif /* !CONFIG_SYMLINK */
         }
 
         /* Advance to the next pathname component */
@@ -318,7 +354,32 @@ int inode_lookup(struct inode **inode, struct inode **dir, char *pathname,
     }
 
     /* Return the referenced node to the caller */
-    *inode = node;
+    if (inode)
+        *inode = node;
+    else
+        inode_deref(node);
+    return 0;
+}
+
+ATTR_NOINLINE int inode_lookup_path
+    (struct inode **inode, const char *pathname, int oflag,
+     mode_t mode, u_char follow)
+{
+    /* Resolve the supplied pathname to an absolute path */
+    int error = inode_path_to_abs(temp_path, sizeof(temp_path), pathname);
+    if (error < 0) {
+        return error;
+    }
+
+    /* Look up the path and/or create the new node */
+    kmalloc_buf_lock();
+    error = inode_lookup(inode, temp_path, oflag, mode, follow);
+    if (error < 0) {
+        kmalloc_buf_unlock();
+        return error;
+    }
+
+    /* Note: The buffer cache is left locked on success */
     return 0;
 }
 
@@ -330,6 +391,7 @@ int inode_access(const struct inode *inode, int mode)
         return 0;
     } else {
         /* Use the effective uid and gid to check the permissions */
+#if CONFIG_ACCESS_UID
         uid_t uid = current_proc->euid;
         uid_t gid = current_proc->egid;
         mode_t imode = inode->mode;
@@ -338,12 +400,22 @@ int inode_access(const struct inode *inode, int mode)
         } else if (gid == inode->gid) {
             imode >>= 3;
         }
+#else
+        /* Root is the only user, so only user checks matter */
+        mode_t imode = inode->mode >> 6;
+#endif
         if ((mode & imode & 7) == mode) {
             return 0;
         } else {
             return -EACCES;
         }
     }
+}
+
+time_t inode_get_mtime(void)
+{
+    /* TODO */
+    return 0;
 }
 
 /* Default implementations of inode operations */

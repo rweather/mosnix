@@ -12,11 +12,14 @@ MEMORY {
     /* Shell can use 0x40 to 0x5f in the zero page, but no more */
     zp : ORIGIN = __rc31 + 1, LENGTH = 0
 
-    /* Put the shell and its runtime data in the top part of memory */
-    ram (rw) : ORIGIN = 0x8000, LENGTH = 0x4000
+    /* Arrange to put shell's data in RAM starting at 0x7800 */
+    ram : ORIGIN = 0x7800, LENGTH = 0x800
+
+    /* Put the shell's code into the top half of memory */
+    rom : ORIGIN = 0x8000, LENGTH = 0x3000
 }
 
-REGION_ALIAS("c_readonly", ram)
+REGION_ALIAS("c_readonly", rom)
 REGION_ALIAS("c_writeable", ram)
 
 SECTIONS { INCLUDE c.ld }
@@ -25,6 +28,6 @@ __stack = ORIGIN(ram) + LENGTH(ram);
 
 OUTPUT_FORMAT {
     SHORT(0x8000)
-    SHORT(0x4000)
-    FULL(ram)
+    SHORT(0x3000)
+    FULL(rom)
 }

@@ -3,7 +3,7 @@ include(CheckIncludeFiles)
 include(CheckLibraryExists)
 
 # Set the project name and version number.
-project(mosnix VERSION 0.1.2 LANGUAGES C ASM)
+project(mosnix VERSION 0.1.4 LANGUAGES C ASM)
 
 # Set up the type of build and the compiler flags to use.
 if(NOT CMAKE_BUILD_TYPE)

@@ -6,8 +6,8 @@
  * information.
  */
 
-#ifndef MOSNIX_DRIVERS_DEVICES_H
-#define MOSNIX_DRIVERS_DEVICES_H
+#ifndef MOSNIX_DEVICES_H
+#define MOSNIX_DEVICES_H
 
 #include <mosnix/file.h>
 

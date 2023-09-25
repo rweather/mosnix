@@ -55,8 +55,8 @@ struct dirent *readdir(DIR *dir)
 {
     ssize_t size;
     if (dir) {
-        size = syscall(SYS_readdir, dir->fd, &(dir->entry), sizeof(dir->entry));
-        if (size < 0)
+        size = syscall(SYS_read, dir->fd, &(dir->entry), sizeof(dir->entry));
+        if (size <= 0)
             return 0;
         return &(dir->entry);
     } else {

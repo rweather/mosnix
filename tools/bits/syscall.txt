@@ -28,7 +28,7 @@
 30  |stat%          |int        |const char *path|struct stat *statbuf
 31  |lstat%         |int        |const char *path|struct stat *statbuf
 32  |_opendir%      |int        |const char *path
-33  |_readdir%      |ssize_t    |int fd|void *data|size_t size
+33  |umask%         |mode_t     |mode_t mask
 #
 # Processes
 #
@@ -51,3 +51,4 @@
 # Other
 #
 100 |uname%         |int        |struct utsname *buf
+101 |strerror%      |char *     |int errnum|>char* result

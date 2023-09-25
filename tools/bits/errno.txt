@@ -1,3 +1,6 @@
+#
+# Must be in strict ascending order with no gaps between the values.
+#
 EPERM           |  1|Operation not permitted
 ENOENT          |  2|No such file or directory
 ESRCH           |  3|No such process

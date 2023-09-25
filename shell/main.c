@@ -1,24 +1,19 @@
+/*
+ * Copyright (c) 2023 Rhys Weatherley
+ *
+ * Licensed under the Apache License, Version 2.0 with LLVM Exceptions,
+ * See https://github.com/rweater/mosnix/blob/main/LICENSE for license
+ * information.
+ */
 
 #include "print.h"
+#include "command.h"
 #include <stdio.h>
 #include <unistd.h>
-#include <sys/utsname.h>
+
+int make_rootfs(void);
 
 static char buffer[128];
-
-static void print_banner(void)
-{
-    struct utsname uts;
-    uname(&uts);
-    print_nl();
-    print_string(uts.sysname);
-    print_char(' ');
-    print_string(uts.release);
-    print_char(' ');
-    print_string(uts.machine);
-    print_nl();
-    print_nl();
-}
 
 static int get_line(char *buf, size_t size)
 {
@@ -44,17 +39,47 @@ static int get_line(char *buf, size_t size)
     return 1;
 }
 
+/**
+ * @brief Perform system initialization tasks.
+ */
+void init(void)
+{
+    /* Set the full umask so that the root filesystem nodes are
+     * created with exactly the mode bits we want. */
+    umask(0);
+
+    /* Make the root filesystem skeleton */
+    print_string("Mounting root filesystem ... ");
+    print_flush();
+    if (make_rootfs() < 0) {
+        print_error(NULL);
+    } else {
+        print_string("ok\n");
+    }
+
+    /* Revert to a normal umask for shell operations */
+    umask(022);
+}
+
 int main(int argc, char *argv[])
 {
     (void)argc;
     (void)argv;
 
-    print_banner();
+    /* Print the OS and machine name at startup */
+    print_nl();
+    cmd_uname(0, 0);
+    print_nl();
 
+    /* Initialize the system */
+    init();
+    print_nl();
+
+    /* Main loop for the shell */
     for (;;) {
         /* Print the current working directory and the prompt */
-        getcwd(buffer, sizeof(buffer));
-        print_string(buffer);
+        getcwd(temp_path1, sizeof(temp_path1));
+        print_string(temp_path1);
         print_string("# ");
 
         /* Get a line of input */
@@ -62,9 +87,7 @@ int main(int argc, char *argv[])
             break;
 
         /* Process the input line */
-        print_string("ECHO: ");
-        print_string(buffer);
-        print_nl();
+        cmd_exec(buffer);
     }
     print_nl();
 

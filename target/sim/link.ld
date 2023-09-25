@@ -15,34 +15,37 @@ MEMORY {
      * The rest of the zero page is reserved for user space programs. */
     zp : ORIGIN = __rc31 + 1, LENGTH = 0x20
 
-    /* Put the kernel and its runtime data in the top part of memory.
-     * User space programs will be loaded to the bottom half of memory. */
-    ram (rw) : ORIGIN = 0xc000, LENGTH = 0x3ff0
+    /* First 4K of memory is reserved for the kernel.  The rest is
+     * used by user space applications. */
+    ram : ORIGIN = 0x200, LENGTH = 0x1000 - 0x200
+
+    /* Put the kernel code in the top part of memory. */
+    rom : ORIGIN = 0xb000, LENGTH = 0x4ff0
 }
 
-REGION_ALIAS("c_readonly", ram)
+REGION_ALIAS("c_readonly", rom)
 REGION_ALIAS("c_writeable", ram)
 
 SECTIONS { INCLUDE c.ld }
 
 /* Set initial soft stack address to just above last memory address. (It grows down.) */
-__stack = 0xfff0;
+__stack = ORIGIN(ram) + LENGTH(ram);
 
 /* Tell the kernel where its usable user space RAM lies */
-user_space_ram_start = 0x0200;
-user_space_ram_end = 0x7000;
+user_space_ram_start = 0x1000;
+user_space_ram_end = 0x6800;
 
 /* Tell the kernel where the buffer cache is located in RAM */
-buffer_cache_ram_start = 0x7000;
-buffer_cache_ram_end = 0x8000;
+buffer_cache_ram_start = 0x6800;
+buffer_cache_ram_end = 0x7800;
 
 /* Tell the kernel where the shell code lies */
 shell_start = 0x8000;
 
 OUTPUT_FORMAT {
-    SHORT(0xc000)
-    SHORT(__data_end - 0xc000)
-    TRIM(ram)
+    SHORT(0xb000)
+    SHORT(0x4ff0)
+    FULL(rom)
 
     SHORT(0xfffa)
     SHORT(6)

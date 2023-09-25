@@ -2,6 +2,7 @@
 install(FILES
     attributes.h
     config.h
+    devices.h
     devnum.h
     file.h
     inode.h

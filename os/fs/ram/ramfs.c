@@ -7,6 +7,10 @@
  */
 
 #include "ramfs.h"
+#include <mosnix/proc.h>
+#include <mosnix/config.h>
+#include <mosnix/devices.h>
+#include <dirent.h>
 #include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
@@ -99,6 +103,189 @@ static int ramfs_lookup
     return -ENOENT;
 }
 
+static ssize_t ramfs_dir_read(struct file *file, void *data, size_t size)
+{
+    struct dirent *out = (struct dirent *)data;
+    struct ramfs_dirent *entry;
+    unsigned posn, count;
+    unsigned char namelen;
+    mode_t mode;
+    ssize_t result;
+
+    /* Seek to the correct entry.  It is possible that the directory
+     * has been modified since last we looked at it, so we always seek
+     * from the beginning every time.  Consider more efficient ways
+     * to do this later. */
+    entry = file->inode->ramfs_dir;
+    posn = (unsigned)(file->posn);
+    while (entry && posn > 0) {
+        entry = entry->next;
+        --posn;
+    }
+
+    /* Read entries from the directory into the supplied buffer */
+    result = 0;
+    count = 0;
+    while (entry && size >= sizeof(struct dirent)) {
+        mode = entry->inode->mode;
+        out->d_type = mode >> 12;
+        out->d_mode_np = mode;
+        switch (mode & S_IFMT) {
+        case S_IFREG:
+        case S_IFLNK:
+            out->d_ino = entry->inode->ramfs_file.size;
+            break;
+        case S_IFCHR:
+        case S_IFBLK:
+            out->d_ino = entry->inode->device;
+            break;
+        default:
+            out->d_ino = 0;
+            break;
+        }
+        out->d_mtime_np = entry->inode->mtime;
+        namelen = entry->namelen;
+        memcpy(out->d_name, entry->name, namelen);
+        memset(out->d_name + namelen, 0, DIRENT_NAME_MAX - namelen);
+        result += sizeof(struct dirent);
+        size -= sizeof(struct dirent);
+        entry = entry->next;
+        ++count;
+        ++out;
+    }
+    file->posn += count;
+    return result;
+}
+
+static struct file_operations const ramfs_dir_operations = {
+    .close = file_close_default,
+    .read = ramfs_dir_read,
+    .write = file_write_default,
+    .lseek = file_lseek_default,
+    .ioctl = file_ioctl_default
+};
+
+static int ramfs_open(struct file *file)
+{
+    struct inode *inode;
+    int result;
+    switch (file->mode & S_IFMT) {
+    case S_IFDIR:
+        /* Open a directory for reading */
+        file->op = &ramfs_dir_operations;
+        result = 0;
+        break;
+
+    case S_IFREG:
+        /* Open a regular file for reading or writing */
+        /* TODO */
+        result = 0;
+        break;
+
+    case S_IFCHR:
+        /* Open a character special device */
+        inode = file->inode;
+        file->inode = NULL;
+        result = char_device_open(inode->device, file);
+        inode_deref(inode);
+        break;
+
+    default:
+        /* Cannot open this type of file.  In the case of block special
+         * devices, they should be mounted instead of opened. */
+        result = -EACCES;
+        break;
+    }
+    return result;
+}
+
+static int ramfs_mknod
+    (struct inode **inode, struct inode *dir,
+     const char *name, size_t namelen, mode_t mode)
+{
+    struct ramfs_dirent *dirent;
+    struct ramfs_dirent **ptr;
+    struct ramfs_dirent *dot;
+    struct ramfs_dirent *dotdot;
+    struct inode *child;
+
+    /* Directory check on the parent, just in case */
+    if (!S_ISDIR(dir->mode)) {
+        return -ENOTDIR;
+    }
+
+    /* Check the length of the name */
+    if (namelen > RAMFS_MAX_NAME) {
+        return -ENAMETOOLONG;
+    }
+
+    /* Allocate a new directory entry for the child */
+    dirent = kmalloc_buf_alloc();
+    if (!dirent) {
+        return -ENOMEM;
+    }
+
+    /* Allocate a new inode for the child */
+    child = inode_alloc(&ramfs_operations);
+    if (!child) {
+        kmalloc_buf_free(dirent);
+        return -ENOMEM;
+    }
+    child->mode = mode;
+#if CONFIG_ACCESS_UID
+    child->uid = current_proc->euid;
+    child->gid = current_proc->egid;
+#endif
+    child->mtime = inode_get_mtime();
+
+    /* Populate the directory entry */
+    dirent->namelen = namelen;
+    memcpy(dirent->name, name, namelen);
+    dirent->inode = child;
+
+    /* If the child is a directory, also create the "." and ".." entries */
+    if (S_ISDIR(mode)) {
+        dot = kmalloc_buf_alloc();
+        if (!dot) {
+            inode_deref(child);
+            kmalloc_buf_free(dirent);
+            return -ENOMEM;
+        }
+        dotdot = kmalloc_buf_alloc();
+        if (!dotdot) {
+            inode_deref(child);
+            kmalloc_buf_free(dot);
+            kmalloc_buf_free(dirent);
+            return -ENOMEM;
+        }
+        dot->namelen = 1;
+        dot->name[0] = '.';
+        dot->inode = child;
+        dot->next = dotdot;
+        dotdot->namelen = 2;
+        dotdot->name[0] = '.';
+        dotdot->name[1] = '.';
+        dotdot->inode = dir;
+        child->ramfs_dir = dot;
+    }
+
+    /* Add the new directory entry to the end of the parent directory */
+    ptr = &(dir->ramfs_dir);
+    while (*ptr != NULL) {
+        ptr = &((*ptr)->next);
+    }
+    *ptr = dirent;
+
+    /* Add a reference to the child and return it to the caller */
+    if (inode) {
+        inode_ref(child);
+        *inode = child;
+    }
+    return 0;
+}
+
+#if CONFIG_SYMLINK
+
 static ssize_t ramfs_readlink(struct inode *inode, char *buf, size_t size)
 {
     const struct ramfs_data *data;
@@ -135,10 +322,16 @@ static ssize_t ramfs_readlink(struct inode *inode, char *buf, size_t size)
     return (ssize_t)result;
 }
 
+#endif /* CONFIG_SYMLINK */
+
 struct inode_operations const ramfs_operations = {
     .release = ramfs_release,
     .lookup = ramfs_lookup,
-    .readlink = ramfs_readlink
+    .open = ramfs_open,
+    .mknod = ramfs_mknod,
+#if CONFIG_SYMLINK
+    .readlink = ramfs_readlink,
+#endif
 };
 
 void ramfs_init(void)
@@ -168,7 +361,7 @@ void ramfs_init(void)
     dotdot->namelen = 2;
     dotdot->name[0] = '.';
     dotdot->name[1] = '.';
-    dot->inode = root;
+    dotdot->inode = root;
     root->ramfs_dir = dot;
 
     /* Unlock the buffer cache */

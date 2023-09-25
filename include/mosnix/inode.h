@@ -10,12 +10,17 @@
 #define MOSNIX_INODE_H
 
 #include <mosnix/kmalloc.h>
+#include <mosnix/config.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/** Extra open mode that indicates "executable" or "searchable directory" */
+#define O_EXEC 3
+
 struct inode_operations;
+struct file;
 
 /**
  * @brief Structure of an inode in a filesystem.  This is the in-memory
@@ -37,11 +42,13 @@ struct inode
     /** Type and permission bits */
     mode_t mode;
 
+#if CONFIG_ACCESS_UID
     /** User that owns this inode */
     uid_t uid;
 
     /** Group that owns this inode */
     gid_t gid;
+#endif
 
     /** Last modification time */
     time_t mtime;
@@ -73,7 +80,7 @@ struct inode
  * Each filesystem defines its own version of this structure with the
  * allowed operations.
  *
- * The "release" and "lookup" members are mandatory.  Other fields
+ * The "release", "lookup", and "open" members are mandatory.  Other fields
  * can be NULL if the feature does not exist for the inode type.
  */
 struct inode_operations
@@ -103,6 +110,41 @@ struct inode_operations
                   const char *name, size_t namelen);
 
     /**
+     * @brief Opens a file using the underlying filesystem.
+     *
+     * @param[in,out] file The file structure.
+     *
+     * @return Zero on success, or a negative error code otherwise.
+     *
+     * The "inode" member of @a file will already be populated if it is an
+     * inode-based file.
+     *
+     * The "op" member of @a file must be set by this function on success.
+     */
+    int (*open)(struct file *file);
+
+    /**
+     * @brief Creates a new inode as a child of a directory inode.
+     *
+     * @param[out] inode Returns the child inode on success, with an
+     * extra reference.
+     * @param[in] dir The directory to look in.
+     * @param[in] name Points to the name to look for.
+     * @param[in] namelen Length of the name to look for.
+     * @param[in] mode The mode for the new node.
+     *
+     * @return Zero on success, or an error code.
+     *
+     * If @a mode indicates a directory, then this function must create
+     * the "." and ".." links for the new directory.
+     *
+     * This function may be NULL if the underlying filesystem is read-only.
+     */
+    int (*mknod)(struct inode **inode, struct inode *dir,
+                 const char *name, size_t namelen, mode_t mode);
+
+#if CONFIG_SYMLINK
+    /**
      * @brief Reads the contents of a symbolic link inode.
      *
      * @param[in] inode The inode to read.
@@ -111,8 +153,12 @@ struct inode_operations
      *
      * The number of characters in the link's contents that were
      * written to @a buf, or a negative error code.
+     *
+     * This function may be NULL if the underlying filesystem does not
+     * support symbolic links.
      */
     ssize_t (*readlink)(struct inode *inode, char *buf, size_t size);
+#endif
 };
 
 /* Check that the inode structure fits within a buffer cache entry */
@@ -203,11 +249,7 @@ int inode_symlink_to_abs(char *out, size_t outlen, const char *pathname);
 /**
  * @brief Lookup an absolute pathname in the filesystem.
  *
- * @param[out] inode The inode for the path if it was found.  Set to NULL
- * if the path was not found, but @a dir may be non-NULL if there is a
- * directory that a new inode can be created in.
- * @param[out] dir The inode for the directory if the path was not found
- * and we are in create mode.  Set to NULL if the path was found.
+ * @param[out] inode The inode for the path if it was found.
  * @param[in] pathname The absolute pathname to look for, which must be
  * the output of inode_path_to_abs() or inode_symlink_to_abs().  The first
  * character of the @a pathname is assumed to be '/'.
@@ -217,8 +259,8 @@ int inode_symlink_to_abs(char *out, size_t outlen, const char *pathname);
  * @param[in] follow Non-zero to follow the last symbolic link in a
  * path, or zero to stop at the last item if it is a symbolic link.
  *
- * @return 0 if the name already exists, 1 if a new inode can be created
- * under @a dir, or a negative error code.
+ * @return Zero on success with a pre-existing inode, 1 on success
+ * if a new inode was created, or a negative error code.
  *
  * This function must be called with the buffer cache lock held.
  * The returned @a inode will have its reference count incremented by 1.
@@ -227,8 +269,29 @@ int inode_symlink_to_abs(char *out, size_t outlen, const char *pathname);
  * lookup involves following symbolic links.  It must point to a buffer
  * of at least CONFIG_PATH_MAX characters in length.
  */
-int inode_lookup(struct inode **inode, struct inode **dir, char *pathname,
-                 int oflag, mode_t mode, u_char follow);
+int inode_lookup(struct inode **inode, char *pathname, int oflag,
+                 mode_t mode, u_char follow);
+
+/**
+ * @brief Lookup a pathname in the filesystem.
+ *
+ * @param[out] inode The inode for the path if it was found.
+ * @param[in] pathname The pathname to look for, which may be absolute or
+ * relative.
+ * @param[in] oflag The open flags, including creation flags.
+ * @param[in] mode The mode to create a new inode with, or the type of
+ * node that we expect to find such as S_IFREG.
+ * @param[in] follow Non-zero to follow the last symbolic link in a
+ * path, or zero to stop at the last item if it is a symbolic link.
+ *
+ * @return Zero on success with a pre-existing inode, 1 on success
+ * if a new inode was created, or a negative error code.
+ *
+ * On success, the buffer cache lock will be held and the returned
+ * @a inode will have its reference count incremented by 1.
+ */
+int inode_lookup_path(struct inode **inode, const char *pathname, int oflag,
+                      mode_t mode, u_char follow);
 
 /**
  * @brief Determine if the user has the requested permission on an inode.
@@ -239,6 +302,13 @@ int inode_lookup(struct inode **inode, struct inode **dir, char *pathname,
  * @return Zero if access is allowed, or -EACCES if not allowed.
  */
 int inode_access(const struct inode *inode, int mode);
+
+/**
+ * @brief Gets a value suitable for use in the mtime field of an inode.
+ *
+ * @return The time value.
+ */
+time_t inode_get_mtime(void);
 
 #ifdef __cplusplus
 }

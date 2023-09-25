@@ -8,6 +8,7 @@
 
 #include <mosnix/syscall.h>
 #include <mosnix/file.h>
+#include <mosnix/inode.h>
 #include <mosnix/proc.h>
 #include <bits/fcntl.h>
 #include <errno.h>
@@ -40,6 +41,18 @@ ATTR_NOINLINE struct file *file_get(int fd)
     return current_proc->fd[fd];
 }
 
+ATTR_NOINLINE int file_put(struct file *file)
+{
+    int fd;
+    for (fd = 0; fd < CONFIG_PROC_FD_MAX; ++fd) {
+        if (current_proc->fd[fd] == NULL) {
+            current_proc->fd[fd] = file;
+            return fd;
+        }
+    }
+    return -EMFILE;
+}
+
 ATTR_NOINLINE struct file *file_new(int flags, mode_t mode)
 {
     unsigned index;
@@ -49,20 +62,59 @@ ATTR_NOINLINE struct file *file_new(int flags, mode_t mode)
             file->count = 1;
             file->flags = flags;
             file->mode = mode;
-            file->op = &file_default_operations;
+            file->op = NULL;
+            file->inode = NULL;
+            file->posn = 0;
             return file;
         }
     }
     return 0;
 }
 
+int file_open(const char *path, int flags, mode_t mode)
+{
+    struct inode *inode;
+    struct file *file;
+    int error;
+
+    /* Resolve the inode corresponding to the path */
+    error = inode_lookup_path(&inode, path, flags, mode, 1);
+    if (error < 0) {
+        return error;
+    }
+
+    /* Allocate a file descriptor structure */
+    file = file_new(flags, inode->mode);
+    if (!file) {
+        inode_deref(inode);
+        kmalloc_buf_unlock();
+        return -ENFILE;
+    }
+    file->inode = inode;
+
+    /* Perform backend-specific open tasks and set the operation table */
+    error = inode->op->open(file);
+    if (error < 0) {
+        file_deref(file);
+        kmalloc_buf_unlock();
+        return error;
+    }
+
+    /* Put the open file into the current process's file descriptor table */
+    error = file_put(file);
+    if (error < 0) {
+        file_deref(file);
+    }
+    kmalloc_buf_unlock();
+    return error;
+}
+
 /* System call interface */
 
 int sys_open(struct sys_open_s *args)
 {
-    /* TODO */
-    (void)args;
-    return -EPERM;
+    mode_t mode = (args->mode & ~(current_proc->umask) & 0777);
+    return file_open(args->path, args->flags, mode);
 }
 
 int sys_close(struct sys_close_s *args)
@@ -138,17 +190,19 @@ int sys_lseek(struct sys_lseek_s *args)
         return -EBADF;
 
     /* Validate the "whence" value */
-    /* TODO */
+    if (args->whence < SEEK_SET || args->whence > SEEK_END)
+        return -EINVAL;
 
     /* Add a reference to the file in case the lseek function blocks */
     file_ref(file);
 
     /* Perform the lseek using the back-end implementation */
     result = file->op->lseek(file, args->offset, args->whence);
+    *(args->result) = result;
 
     /* Dereference the file and return */
     file_deref(file);
-    return result;
+    return (result < 0) ? (int)result : 0;
 }
 
 static int sys_dup_scan(int oldfd, int newfd)
@@ -266,7 +320,8 @@ int sys_fcntl(struct sys_fcntl_s *args)
 
 int file_close_default(struct file *file)
 {
-    (void)file;
+    if (file->inode)
+        inode_deref(file->inode);
     return 0;
 }
 
@@ -301,11 +356,3 @@ int file_ioctl_default(struct file *file, unsigned long request, void *args)
     (void)args;
     return -EINVAL;
 }
-
-const struct file_operations file_default_operations = {
-    .close = file_close_default,
-    .read = file_read_default,
-    .write = file_write_default,
-    .lseek = file_lseek_default,
-    .ioctl = file_ioctl_default
-};
