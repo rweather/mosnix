@@ -12,7 +12,7 @@ MEMORY {
 
   /* First 4K of memory is reserved for the kernel.  The rest is
    * used by user space applications. */
-  ram : ORIGIN = 0x200, LENGTH = 0x1000 - 0x200
+  ram : ORIGIN = 0x200, LENGTH = 0x1800 - 0x200
 
   /* Put the kernel's code into ROM */
   rom : ORIGIN = 0xb000, LENGTH = 0x4ffa
@@ -23,7 +23,7 @@ PROVIDE(irq = _irq_default);
 PROVIDE(nmi = _irq_default);
 
 /* Tell the kernel where its usable user space RAM lies */
-user_space_ram_start = 0x1000;
+user_space_ram_start = 0x1800;
 user_space_ram_end = 0x3000;
 
 /* Tell the kernel where the buffer cache is located in RAM */

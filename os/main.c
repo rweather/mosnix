@@ -12,7 +12,7 @@
 #include <mosnix/sched.h>
 #include <mosnix/syscall.h>
 #include <mosnix/target.h>
-#include "drivers/spi/spi.h"
+#include "drivers/sdcard/sdcard.h"
 #include "fs/ram/ramfs.h"
 #include <stdio.h>
 
@@ -22,8 +22,9 @@ int main(void)
     kmalloc_init();
     ramfs_init();
     file_init();
-#if CONFIG_SPI
-    spi_init();
+#if defined(CONFIG_SD) && defined(CONFIG_SPI)
+    sd_init();
+    sd_detect();
 #endif
     proc_init();
 

@@ -52,10 +52,21 @@ ATTR_NOINLINE void kputquoted(const char *s, size_t limit)
     }
 }
 
-ATTR_NOINLINE void kputhex(unsigned int value)
+ATTR_NOINLINE void kputhexbyte(unsigned char value)
+{
+    kputchar(hexchars[(value >> 4) & 0x0F]);
+    kputchar(hexchars[value & 0x0F]);
+    kputchar(' ');
+}
+
+ATTR_NOINLINE void kputhex(unsigned long value)
 {
     kputchar('0');
     kputchar('x');
+    kputchar(hexchars[(value >> 28) & 0x0F]);
+    kputchar(hexchars[(value >> 24) & 0x0F]);
+    kputchar(hexchars[(value >> 20) & 0x0F]);
+    kputchar(hexchars[(value >> 16) & 0x0F]);
     kputchar(hexchars[(value >> 12) & 0x0F]);
     kputchar(hexchars[(value >> 8) & 0x0F]);
     kputchar(hexchars[(value >> 4) & 0x0F]);

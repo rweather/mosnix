@@ -19,6 +19,8 @@ set(KERNEL_SOURCES
     drivers/devices.c
     drivers/misc/misc.h
     drivers/misc/null.c
+    drivers/sdcard/sdcard.h
+    drivers/sdcard/sdcard.c
     drivers/spi/spi.h
     drivers/tty/console.h
     drivers/tty/basictty.c

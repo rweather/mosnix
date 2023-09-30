@@ -53,11 +53,19 @@ void kputstr(const char *s);
 void kputquoted(const char *s, size_t limit);
 
 /**
+ * @brig Puts a hexadecimal byte value to the kernel's console output,
+ * followed by a space.
+ *
+ * @param[in] value The value to put in hexadecimal.
+ */
+void kputhexbyte(unsigned char value);
+
+/**
  * @brief Puts a hexadecimal value to the kernel's console output.
  *
  * @param[in] value The value to put in hexadecimal.
  */
-void kputhex(unsigned int value);
+void kputhex(unsigned long value);
 
 /**
  * @brief Puts a pointer value to the kernel's console output.
