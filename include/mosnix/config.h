@@ -25,14 +25,14 @@
  * @brief Maximum number of file descriptors in the global fd table.
  */
 #ifndef CONFIG_FD_MAX
-#define CONFIG_FD_MAX 64
+#define CONFIG_FD_MAX 32
 #endif
 
 /**
  * @brief Maximum number of file descriptors in the per-process fd table.
  */
 #ifndef CONFIG_PROC_FD_MAX
-#define CONFIG_PROC_FD_MAX 16
+#define CONFIG_PROC_FD_MAX 8
 #endif
 
 /**

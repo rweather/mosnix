@@ -64,29 +64,9 @@ int rmdir(const char *path)
     return syscall(SYS_rmdir, path);
 }
 
-int symlink(const char *target, const char *path)
-{
-    return syscall(SYS_symlink, target, path);
-}
-
-ssize_t readlink(const char *target, char *buf, size_t size)
-{
-    return syscall(SYS_readlink, target, buf, size);
-}
-
 int mknod(const char *path, mode_t mode, dev_t dev)
 {
     return syscall(SYS_mknod, path, mode, dev);
-}
-
-int chmod(const char *path, mode_t mode)
-{
-    return syscall(SYS_chmod, path, mode);
-}
-
-int chown(const char *path, uid_t owner, gid_t group)
-{
-    return syscall(SYS_chown, path, owner, group);
 }
 
 int unlink(const char *path)

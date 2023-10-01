@@ -19,11 +19,6 @@ int lstat(const char *path, struct stat *buf)
     return syscall(SYS_lstat, path, buf);
 }
 
-int fstat(int fd, struct stat *buf)
-{
-    return syscall(SYS_fstat, fd, buf);
-}
-
 mode_t umask(mode_t mask)
 {
     return (mode_t)syscall(SYS_umask, mask);

@@ -18,26 +18,21 @@
 #include <stdlib.h>
 #include <errno.h>
 
-/** Process table for the kernel */
-static struct proc process_table[CONFIG_PROC_MAX] ATTR_SECTION_NOINIT;
+/** Process control block for the shell process.  All other blocks are
+ *  allocated in user space memory on-demand. */
+static struct proc shell_proc ATTR_SECTION_NOINIT;
 
-/** List of unused process blocks */
-static struct run_queue unused_procs;
+/** Process table for the kernel */
+static struct proc *process_table[CONFIG_PROC_MAX];
 
 struct proc * volatile current_proc ATTR_SECTION_ZP;
 uint8_t volatile in_kernel ATTR_SECTION_ZP;
 
 void proc_init(void)
 {
-    struct proc *p;
-    pid_small_t pid;
-    TAILQ_INIT(&unused_procs);
-    for (pid = 1, p = process_table; pid <= CONFIG_PROC_MAX; ++pid, ++p) {
-        p->pid = pid;
-        p->ppid = PID_UNUSED;
-        p->state = PROC_UNUSED;
-        TAILQ_INSERT_TAIL(&unused_procs, p, qptrs);
-    }
+    shell_proc.pid = 1;
+    shell_proc.ppid = PID_UNUSED;
+    shell_proc.state = PROC_UNUSED;
     current_proc = NULL;
 }
 
@@ -95,16 +90,20 @@ int proc_create(pid_t ppid, int argc, char **argv, struct proc **proc)
     pid_small_t pid;
 
     /* Find the next available unused process */
-    p = TAILQ_FIRST(&unused_procs);
-    if (!p)
+    if (shell_proc.state == PROC_UNUSED) {
+        /* First process created is always the shell */
+        p = &shell_proc;
+    } else {
+        /* TODO: allocate the process block from user space memory */
         return -ENOMEM;
-    TAILQ_REMOVE(&unused_procs, p, qptrs);
+    }
 
     /* Zero the entire process structure */
     pid = p->pid;
     memset(p, 0, sizeof(struct proc));
     p->pid = pid;
     p->ppid = ppid;
+    process_table[pid - 1] = p;
 
     /* Format the argc/argv arguments into the process structure */
     err = proc_format_args(p, argc, argv);
@@ -117,7 +116,7 @@ int proc_create(pid_t ppid, int argc, char **argv, struct proc **proc)
 
     /* Inherit properties from the parent, or set the defaults for pid 1 */
     if (ppid) {
-        struct proc *parent = &(process_table[ppid - 1]);
+        struct proc *parent = process_table[ppid - 1];
         memcpy(p->cwd, parent->cwd, sizeof(p->cwd));
         p->umask = parent->umask;
     } else {
@@ -133,7 +132,7 @@ int proc_create(pid_t ppid, int argc, char **argv, struct proc **proc)
 void proc_free(struct proc *proc)
 {
     proc->state = PROC_UNUSED;
-    TAILQ_INSERT_TAIL(&unused_procs, proc, qptrs);
+    /* TODO */
 }
 
 static void proc_push_return_stack(struct proc *p, uintptr_t value)

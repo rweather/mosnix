@@ -48,7 +48,7 @@
 #define EDEADLK         35 /* Resource deadlock would occur */
 #define ENAMETOOLONG    36 /* File name too long */
 #define ENOLCK          37 /* No record locks available */
-#define ENOSYS          38 /* Invalid system call number */
+#define ENOSYS          38 /* Invalid system call */
 #define ENOTEMPTY       39 /* Directory not empty */
 #define ELOOP           40 /* Too many symbolic links encountered */
 #define EWOULDBLOCK     EAGAIN /* Operation would block */

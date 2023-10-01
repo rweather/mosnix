@@ -19,6 +19,10 @@ for line in lines:
         continue
     fields = line.strip().split('|')
     fields = [s.strip() for s in fields]
-    print("#define %-16s%s /* %s */" % (fields[0], fields[1], fields[2]))
+    if len(fields) > 3:
+        name = fields[3]
+    else:
+        name = fields[2]
+    print("#define %-16s%s /* %s */" % (fields[0], fields[1], name))
 
 gentools.print_footer(cplusplus=False)

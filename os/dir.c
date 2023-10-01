@@ -92,11 +92,6 @@ int sys_readlink(struct sys_readlink_s *args)
     return -ENOSYS;
 }
 
-#else /* !CONFIG_SYMLINK */
-
-int sys_symlink(struct sys_symlink_s *args) __attribute__((alias("sys_notimp")));
-int sys_readlink(struct sys_readlink_s *args) __attribute__((alias("sys_notimp")));
-
 #endif /* !CONFIG_SYMLINK */
 
 int sys_mknod(struct sys_mknod_s *args)
@@ -132,28 +127,6 @@ int sys_mknod(struct sys_mknod_s *args)
     return error;
 }
 
-int sys_chmod(struct sys_chmod_s *args)
-{
-    /* TODO */
-    (void)args;
-    return -ENOSYS;
-}
-
-#if CONFIG_ACCESS_UID
-
-int sys_chown(struct sys_chown_s *args)
-{
-    /* TODO */
-    (void)args;
-    return -ENOSYS;
-}
-
-#else /* !CONFIG_ACCESS_UID */
-
-int sys_chown(struct sys_chown_s *args) __attribute__((alias("sys_notimp")));
-
-#endif /* !CONFIG_ACCESS_UID */
-
 int sys_unlink(struct sys_unlink_s *args)
 {
     /* TODO */
@@ -162,13 +135,6 @@ int sys_unlink(struct sys_unlink_s *args)
 }
 
 int sys_stat(struct sys_stat_s *args)
-{
-    /* TODO */
-    (void)args;
-    return -ENOSYS;
-}
-
-int sys_fstat(struct sys_fstat_s *args)
 {
     /* TODO */
     (void)args;
