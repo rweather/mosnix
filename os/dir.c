@@ -46,7 +46,6 @@ int sys_chdir(struct sys_chdir_s *args)
     if (error >= 0) {
         strcpy_constrained
             (current_proc->cwd, temp_path, sizeof(current_proc->cwd));
-        kmalloc_buf_unlock();
     }
     return error;
 }
@@ -64,7 +63,6 @@ int sys_mkdir(struct sys_mkdir_s *args)
     error = inode_lookup_path(&inode, args->path, O_CREAT | O_EXCL, mode, 1);
     if (error >= 0) {
         inode_deref(inode);
-        kmalloc_buf_unlock();
     }
     return error;
 }
@@ -122,7 +120,6 @@ int sys_mknod(struct sys_mknod_s *args)
         /* Set the device number in the inode */
         inode->device = args->dev;
         inode_deref(inode);
-        kmalloc_buf_unlock();
     }
     return error;
 }

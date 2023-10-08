@@ -35,10 +35,6 @@ void kmalloc_init(void);
  * or NULL if the buffer cache has been exhausted.
  *
  * The return buffer will be initialized to all-zeroes.
- *
- * @note The returned pointer may be in a memory page that is currently
- * swapped out of the CPU's view of memory.  Callers must use
- * kmalloc_buf_lock() and kmalloc_buf_unlock() to gate access to buffers.
  */
 void *kmalloc_buf_alloc(void);
 
@@ -48,25 +44,6 @@ void *kmalloc_buf_alloc(void);
  * @param[in] buf Points to the buffer to free.
  */
 void kmalloc_buf_free(void *buf);
-
-/**
- * @brief Locks access to the kernel buffer cache and ensures that
- * pointers to the cache are valid.
- *
- * Locks can be applied recursively.  The buffer cache is released when
- * the number of unlock calls matches the number of lock calls.
- *
- * While the buffer cache is locked, process memory may be inaccessible.
- *
- * @note Not used yet, but may be in the future on platforms with
- * remappable memory pages.
- */
-#define kmalloc_buf_lock() do { ; } while (0)
-
-/**
- * @brief Unlocks access to the kernel buffer cache.
- */
-#define kmalloc_buf_unlock() do { ; } while (0)
 
 /**
  * @brief Compile-time check that a structure can fit in a buffer cache entry.

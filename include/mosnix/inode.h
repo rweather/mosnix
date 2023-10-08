@@ -28,8 +28,6 @@ struct file;
  *
  * The inodes are allocated from the buffer cache, so there can be a
  * large number of them active at once.
- *
- * @note The buffer cache lock must be held while operating on inodes.
  */
 struct inode
 {
@@ -204,8 +202,6 @@ int inode_deref(struct inode *inode);
  * @brief Gets a reference to the root of the filesystem tree.
  *
  * @return The root inode.
- *
- * This function must be called with the buffer cache lock held.
  */
 struct inode *inode_get_root(void);
 
@@ -230,9 +226,6 @@ struct inode *inode_get_root(void);
  *
  * While this is not technically POSIX, it makes the implementation
  * simpler to separate pathname resolution from walking the filesystem.
- *
- * The buffer cache lock must not be held when calling this function
- * if @a pathname points into user space.
  */
 int inode_path_to_abs(char *out, size_t outlen, const char *pathname);
 
@@ -245,9 +238,6 @@ int inode_path_to_abs(char *out, size_t outlen, const char *pathname);
  *
  * @return 0 if the pathname was resolved, 1 if the pathname was resolved
  * but the last character was a '/', or a negative error code otherwise.
- *
- * The buffer cache lock must not be held when calling this function
- * if @a pathname points into user space.
  */
 int inode_symlink_to_abs(char *out, size_t outlen, const char *pathname);
 
@@ -267,7 +257,6 @@ int inode_symlink_to_abs(char *out, size_t outlen, const char *pathname);
  * @return Zero on success with a pre-existing inode, 1 on success
  * if a new inode was created, or a negative error code.
  *
- * This function must be called with the buffer cache lock held.
  * The returned @a inode will have its reference count incremented by 1.
  *
  * The contents of the @a pathname argument may be destroyed if the
@@ -292,8 +281,7 @@ int inode_lookup(struct inode **inode, char *pathname, int oflag,
  * @return Zero on success with a pre-existing inode, 1 on success
  * if a new inode was created, or a negative error code.
  *
- * On success, the buffer cache lock will be held and the returned
- * @a inode will have its reference count incremented by 1.
+ * The returned @a inode will have its reference count incremented by 1.
  */
 int inode_lookup_path(struct inode **inode, const char *pathname, int oflag,
                       mode_t mode, u_char follow);

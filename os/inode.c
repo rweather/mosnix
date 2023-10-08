@@ -372,10 +372,8 @@ ATTR_NOINLINE int inode_lookup_path
     }
 
     /* Look up the path and/or create the new node */
-    kmalloc_buf_lock();
     error = inode_lookup(inode, temp_path, oflag, mode, follow);
     if (error < 0) {
-        kmalloc_buf_unlock();
         return error;
     }
 

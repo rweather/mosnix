@@ -88,7 +88,6 @@ int file_open(const char *path, int flags, mode_t mode)
     file = file_new(flags, inode->mode);
     if (!file) {
         inode_deref(inode);
-        kmalloc_buf_unlock();
         return -ENFILE;
     }
     file->inode = inode;
@@ -97,7 +96,6 @@ int file_open(const char *path, int flags, mode_t mode)
     error = inode->op->open(file);
     if (error < 0) {
         file_deref(file);
-        kmalloc_buf_unlock();
         return error;
     }
 
@@ -106,7 +104,6 @@ int file_open(const char *path, int flags, mode_t mode)
     if (error < 0) {
         file_deref(file);
     }
-    kmalloc_buf_unlock();
     return error;
 }
 

@@ -355,9 +355,6 @@ void ramfs_init(void)
     struct ramfs_dirent *dot;
     struct ramfs_dirent *dotdot;
 
-    /* Lock the buffer cache while we do this */
-    kmalloc_buf_lock();
-
     /* Create the root inode */
     root = inode_alloc(&ramfs_operations);
     root->mode = S_IRUSR | S_IWUSR | S_IXUSR | S_IFDIR |
@@ -379,9 +376,6 @@ void ramfs_init(void)
     dotdot->name[1] = '.';
     dotdot->inode = root;
     root->ramfs_dir = dot;
-
-    /* Unlock the buffer cache */
-    kmalloc_buf_unlock();
 }
 
 struct inode *inode_get_root(void)
