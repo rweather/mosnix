@@ -15,6 +15,9 @@
 extern "C" {
 #endif
 
+/* Name of the target for uname */
+#define CONFIG_TARGET_NAME "mos-sim"
+
 #define SYS_CLOCKS_PER_SEC 1000000UL
 extern clock_t sys_clock(void);
 

@@ -7,6 +7,7 @@
  */
 
 #include <mosnix/syscall.h>
+#include <mosnix/target.h>
 #include <string.h>
 #include <errno.h>
 
@@ -14,7 +15,7 @@ static struct utsname const uname_data = {
     "MOSnix",
     "mosnix",
     MOSNIX_VERSION,
-    MOSNIX_VERSION,
+    CONFIG_TARGET_NAME,
 #if defined(CPU_65C02)
     "mos65c02"
 #else

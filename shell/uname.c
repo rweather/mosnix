@@ -34,7 +34,7 @@ int cmd_uname(int argc, char **argv)
 
     if (argc == 0) {
         /* Printing the startup banner for the system */
-        options = UNAME_SYSNAME | UNAME_RELEASE | UNAME_MACHINE;
+        options = UNAME_SYSNAME | UNAME_RELEASE | UNAME_VERSION | UNAME_MACHINE;
     } else {
         while ((opt = getopt(argc, argv, "asnrvm")) >= 0) {
             switch (opt) {
