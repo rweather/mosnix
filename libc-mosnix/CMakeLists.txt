@@ -6,6 +6,7 @@ add_library(libc-mosnix STATIC
     getchar.c
     getopt.c
     mkdir.c
+    mount.c
     open.c
     putchar.c
     stat.c

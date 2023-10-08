@@ -10,6 +10,7 @@
 #define MOSNIX_DRIVERS_SPI_H
 
 #include <sys/types.h>
+#include <mosnix/attributes.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,7 +24,7 @@ extern "C" {
  * Initializes SCLK, MOSI, MISI, and raises all chip select lines for the
  * SPI devices that are known to the target.
  */
-__attribute__((leaf)) void spi_init(void);
+ATTR_LEAF void spi_init(void);
 
 /**
  * @brief Sends a buffer of bytes on the SPI bus, while discarding
@@ -35,7 +36,7 @@ __attribute__((leaf)) void spi_init(void);
  * It is assumed that the chip select for the SPI device has already been
  * lowered by the calling code.
  */
-__attribute__((leaf)) void spi_send(const void *data, size_t size);
+ATTR_LEAF void spi_send(const void *data, size_t size);
 
 /**
  * @brief Sends a single byte on the SPI bus, which discarding
@@ -46,7 +47,7 @@ __attribute__((leaf)) void spi_send(const void *data, size_t size);
  * It is assumed that the chip select for the SPI device has already been
  * lowered by the calling code.
  */
-__attribute__((leaf)) void spi_send_byte(unsigned char value);
+ATTR_LEAF void spi_send_byte(unsigned char value);
 
 /**
  * @brief Receives a buffer of bytes from the SPI bus, while sending
@@ -58,7 +59,7 @@ __attribute__((leaf)) void spi_send_byte(unsigned char value);
  * It is assumed that the chip select for the SPI device has already been
  * lowered by the calling code.
  */
-__attribute__((leaf)) void spi_receive(void *data, size_t size);
+ATTR_LEAF void spi_receive(void *data, size_t size);
 
 /**
  * @brief Receives a single byte from the SPI bus, while sending a
@@ -69,7 +70,7 @@ __attribute__((leaf)) void spi_receive(void *data, size_t size);
  * It is assumed that the chip select for the SPI device has already been
  * lowered by the calling code.
  */
-__attribute__((leaf)) unsigned char spi_receive_byte(void);
+ATTR_LEAF unsigned char spi_receive_byte(void);
 
 /**
  * @brief Receives a number of bytes from the SPI bus and discards them
@@ -80,17 +81,17 @@ __attribute__((leaf)) unsigned char spi_receive_byte(void);
  * It is assumed that the chip select for the SPI device has already been
  * lowered by the calling code.
  */
-__attribute__((leaf)) void spi_blank(size_t size);
+ATTR_LEAF void spi_blank(size_t size);
 
 /**
  * @brief Lowers the chip select pin for the primary SD card interface.
  */
-__attribute__((leaf)) void spi_sdcard_lower_cs(void);
+ATTR_LEAF void spi_sdcard_lower_cs(void);
 
 /**
  * @brief Raises the chip select pin for the primary SD card interface.
  */
-__attribute__((leaf)) void spi_sdcard_raise_cs(void);
+ATTR_LEAF void spi_sdcard_raise_cs(void);
 
 #ifdef __cplusplus
 }

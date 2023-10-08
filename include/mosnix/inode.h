@@ -54,8 +54,8 @@ struct inode
     time_t mtime;
 
     union {
-        /** Filesystem-specific information about the inode's location */
-        unsigned long info;
+        /** Pointer to extra information about the inode for FAT filesystems */
+        struct fatfs_inode_info *fatfs_info;
 
         /** Information specific to the RAM filesytem */
         struct {
@@ -66,8 +66,13 @@ struct inode
             u_short size;
         } ramfs_file;
 
-        /** Pointer to the first entry in a RAM filesystem directory */
-        struct ramfs_dirent *ramfs_dir;
+        struct {
+            /** Pointer to the first entry in a RAM filesystem directory */
+            struct ramfs_dirent *ramfs_dir;
+
+            /** Replacement inode for when the directory is mounted */
+            struct inode *ramfs_mount;
+        };
 
         /** Device number if this inode is a character or block device */
         dev_t device;

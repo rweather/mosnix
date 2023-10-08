@@ -64,6 +64,7 @@ ATTR_NOINLINE struct file *file_new(int flags, mode_t mode)
             file->mode = mode;
             file->op = NULL;
             file->inode = NULL;
+            file->fatfs_info = NULL;
             file->posn = 0;
             return file;
         }

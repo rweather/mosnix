@@ -14,5 +14,6 @@
 #define ATTR_SECTION_NOINIT __attribute__((section(".noinit")))
 #define ATTR_SECTION_ZP __attribute__((section(".zp")))
 #define ATTR_NOINLINE __attribute__((noinline))
+#define ATTR_LEAF __attribute__((leaf))
 
 #endif

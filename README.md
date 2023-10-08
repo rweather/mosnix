@@ -33,14 +33,22 @@ What state is it in?
 
 Very early days!
 
-* Basic system call dispatching to prove the concept.
+* System call dispatching works.
 * No more than 6 user space processes, 5 excluding the shell.
-* A single user space process for the shell.
-* Pre-emption has not been implemented yet.
-* No filesystem, fork/exec, etc from POSIX.
+* A single user space process for the shell with very basic commands.
+* Pre-emption has not been fully implemented yet, but some support is in place.
+* RAM filesystem for the root directory skeleton.
+* Support for FAT32 filesystems on SD cards for the main storage,
+  mounted at `/mnt/sd`.
+* The FAT32 filesystem is currently read-only.
+* Fork/exec of non-shell processes doesn't work yet - soon.
 * Reading from stdin and writing to stdout/stderr basically works.
-* Shell doesn't do anything yet other than echo its input.
 * System call numbering is not set in stone, will probably change.
+
+The target is to get a useful POSIX-like operating system in less than
+32K of ROM and 16K of RAM that can run on
+<a href="https://eater.net/6502">Ben Eater's Breadboard 6502 Computer</a>.
+Other platforms may follow later if the experiment is successful.
 
 Building
 --------

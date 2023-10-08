@@ -71,10 +71,14 @@ ATTR_NOINLINE static void sd_debug_value(const char *name, unsigned long value)
 ATTR_NOINLINE static void sd_debug_block
     (const char *name, const uint8_t *block, size_t size)
 {
+    uint8_t count = 0;
     kputstr(name);
     kputstr(": ");
     while (size > 0) {
         kputhexbyte(*block++);
+        ++count;
+        if ((count & 0x0F) == 0)
+            kputnl();
         --size;
     }
     kputnl();
@@ -492,6 +496,8 @@ uint8_t sd_redetect(void)
     return sd_detect();
 }
 
+#if 0 /* Implemented in assembly code */
+
 ATTR_NOINLINE uint32_t sd_cluster_to_block(uint32_t cluster)
 {
     /* The first cluster in the data section is number 2 */
@@ -506,6 +512,8 @@ ATTR_NOINLINE uint32_t sd_cluster_to_block(uint32_t cluster)
     /* Convert the cluster number into a block number */
     return sd_info.cluster_offset + (cluster << sd_info.cluster_shift);
 }
+
+#endif
 
 /**
  * @brief Adjusts the block number into a read/write offset for the SD card.

@@ -28,6 +28,8 @@
 31  |lstat%         |int        |const char *path|struct stat *statbuf
 32  |_opendir%      |int        |const char *path
 33  |umask%         |mode_t     |mode_t mask
+34  |mount%         |int        |const char *source|const char *target|const char *filesystemtype|unsigned long mountflags|const void *data
+35  |umount%        |int        |const char *target
 #
 # Processes
 #

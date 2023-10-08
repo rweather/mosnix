@@ -50,7 +50,9 @@ static int ramfs_release(struct inode *inode)
         }
         if (inode->mode & S_ISVTX) {
             /* This directory is also a mount point, so unmount it */
-            /* TODO */
+            if (inode->ramfs_mount) {
+                inode_deref(inode->ramfs_mount);
+            }
         }
     } else if (S_ISREG(inode->mode) || S_ISLNK(inode->mode)) {
         /* Free the data for a regular file or symbolic link */
@@ -79,7 +81,10 @@ static int ramfs_lookup
     /* If the VTX bit is set, then this is actually a mount point and
      * we need to pass the lookup request onto the mounted filesystem. */
     if (dir->mode & S_ISVTX) {
-        /* TODO */
+        if (dir->ramfs_mount) {
+            return dir->ramfs_mount->op->lookup
+                (inode, dir->ramfs_mount, name, namelen);
+        }
         return -ENOENT;
     }
 
@@ -172,8 +177,19 @@ static int ramfs_open(struct file *file)
     switch (file->mode & S_IFMT) {
     case S_IFDIR:
         /* Open a directory for reading */
-        file->op = &ramfs_dir_operations;
-        result = 0;
+        if (file->mode & S_ISVTX) {
+            /* This directory is mounted, so pass the request onto the
+             * underlying filesystem that is mounted here. */
+            inode = file->inode->ramfs_mount;
+            inode_ref(inode);
+            inode_deref(file->inode);
+            file->inode = inode;
+            file->mode = inode->mode;
+            result = inode->op->open(file);
+        } else {
+            file->op = &ramfs_dir_operations;
+            result = 0;
+        }
         break;
 
     case S_IFREG:

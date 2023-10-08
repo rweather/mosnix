@@ -39,57 +39,61 @@ extern "C" {
 
 /**
  * @brief Information about the inserted SD card and FAT32 volume.
+ *
+ * Offsets into this structure are shown in hexadecimal comments.
+ * If the layout of this structure is changed, then the code in
+ * "sdasm.S" may also need to be changed.
  */
 typedef struct
 {
     /** Detect flag, indicating if there is an SD card and its version.
      *  Zero if the SD card is not currently mounted. */
-    uint8_t detect;
+    uint8_t detect;             /* 0x00 */
 
     /** Non-zero if the SD card supports SDHC */
-    uint8_t sdhc;
+    uint8_t sdhc;               /* 0x01 */
 
     /** Cluster size in blocks: 1, 2, 4, 8, ..., 128 (must be a power of 2) */
-    uint8_t cluster_size;
+    uint8_t cluster_size;       /* 0x02 */
 
     /** Number of bits to shift that corresponds to "cluster_size" */
-    uint8_t cluster_shift;
+    uint8_t cluster_shift;      /* 0x03 */
 
     /** Offset of the first partition on the SD card (or the whole card) */
-    uint32_t part_offset;
+    uint32_t part_offset;       /* 0x04 */
 
     /** Number of 512-byte blocks in the partition */
-    uint32_t part_size;
+    uint32_t part_size;         /* 0x08 */
 
     /** Starting block number for the first FAT */
-    uint32_t fat1;
+    uint32_t fat1;              /* 0x0C */
 
     /** Starting block number for the second FAT */
-    uint32_t fat2;
+    uint32_t fat2;              /* 0x10 */
 
     /** Size of each FAT in blocks */
-    uint32_t fat_size;
+    uint32_t fat_size;          /* 0x14 */
 
     /** Cluster number of the root directory */
-    uint32_t root;
+    uint32_t root;              /* 0x18 */
 
     /** Block number of the start of the data clusters */
-    uint32_t cluster_offset;
+    uint32_t cluster_offset;    /* 0x1C */
 
     /** Number of clusters in the partition */
-    uint32_t cluster_count;
-
-    /** Cached block */
-    uint8_t block[SD_BLKSIZE];
+    uint32_t cluster_count;     /* 0x20 */
 
     /** Sector number of the cached block */
-    uint32_t cache_block;
+    uint32_t cache_block;       /* 0x24 */
 
     /** Sector number of the second copy for FAT write operations */
-    uint32_t cache_block2;
+    uint32_t cache_block2;      /* 0x28 */
 
     /** Mode for the cached block (0 if nothing cached) */
-    uint8_t cache_mode;
+    uint8_t cache_mode;         /* 0x2C */
+
+    /** Cached block */
+    uint8_t block[SD_BLKSIZE];  /* 0x2D */
 
 } sd_info_t;
 

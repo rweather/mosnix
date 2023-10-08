@@ -23,7 +23,7 @@ target_link_options(shell-sim
     PRIVATE -mlto-zp=0 -T${CMAKE_CURRENT_LIST_DIR}/link-sim.ld
             -L${CMAKE_BINARY_DIR}/libc-mosnix -llibc-mosnix
             -lexit-return -linit-stack -lcopy-zp-data -lzero-bss
-            ${CMAKE_BINARY_DIR}/libc-mosnix/startup.o
+            -mcpu=mos6502 ${CMAKE_BINARY_DIR}/libc-mosnix/startup.o
 )
 
 # Build a shell for Ben Eater's breadboard computer.
@@ -35,5 +35,5 @@ target_link_options(shell-eater
     PRIVATE -mlto-zp=0 -T${CMAKE_CURRENT_LIST_DIR}/link-eater.ld
             -L${CMAKE_BINARY_DIR}/libc-mosnix -llibc-mosnix
             -lexit-return -linit-stack -lcopy-zp-data -lzero-bss
-            ${CMAKE_BINARY_DIR}/libc-mosnix/startup.o
+            -mcpu=mosw65c02 ${CMAKE_BINARY_DIR}/libc-mosnix/startup.o
 )

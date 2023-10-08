@@ -9,6 +9,7 @@
 #include <mosnix/sched.h>
 #include <mosnix/syscall.h>
 #include <mosnix/printk.h>
+#include <mosnix/attributes.h>
 #include <errno.h>
 #include <stdlib.h>
 
@@ -30,7 +31,7 @@ static struct run_queue runnable = TAILQ_HEAD_INITIALIZER(runnable);
  * This function will return when the current process can continue
  * from where it left off.
  */
-__attribute__((leaf)) int proc_switch_to(struct proc *proc);
+ATTR_LEAF int proc_switch_to(struct proc *proc);
 
 void sched_set_runnable(struct proc *proc)
 {

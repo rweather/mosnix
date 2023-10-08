@@ -112,6 +112,18 @@ struct sys_umask_s {
     mode_t mask;
 };
 
+struct sys_mount_s {
+    const char *source;
+    const char *target;
+    const char *filesystemtype;
+    unsigned long mountflags;
+    const void *data;
+};
+
+struct sys_umount_s {
+    const char *target;
+};
+
 struct sys_exit_s {
     int status;
 };
@@ -159,6 +171,8 @@ struct sys_strerror_s {
 /*  31 */ SYS_ATTR int sys_lstat(struct sys_lstat_s *args);
 /*  32 */ SYS_ATTR int sys_opendir(struct sys_opendir_s *args);
 /*  33 */ SYS_ATTR int sys_umask(struct sys_umask_s *args);
+/*  34 */ SYS_ATTR int sys_mount(struct sys_mount_s *args);
+/*  35 */ SYS_ATTR int sys_umount(struct sys_umount_s *args);
 /*  50 */ SYS_ATTR int sys_getpid(void);
 /*  51 */ SYS_ATTR int sys_getppid(void);
 /*  52 */ SYS_ATTR void sys_exit(struct sys_exit_s *args);

@@ -10,6 +10,7 @@
 #include "command.h"
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/mount.h>
 
 int make_rootfs(void);
 
@@ -44,6 +45,8 @@ static int get_line(char *buf, size_t size)
  */
 void init(void)
 {
+    int result;
+
     /* Set the full umask so that the root filesystem nodes are
      * created with exactly the mode bits we want. */
     umask(0);
@@ -55,6 +58,22 @@ void init(void)
         print_error(NULL);
     } else {
         print_string("ok\n");
+    }
+
+    /* Mount the SD card if we have the hardware for it */
+    if (mount("/dev/mmcblk0", NULL, "vfat", 0, 0) == 0) {
+        print_string("Mounting SD card ... ");
+        print_flush();
+        result = mount("/dev/mmcblk0", "/mnt/sd", "vfat", 0, 0);
+        if (result < 0) {
+            print_error(NULL);
+        } else if (result == 1) {
+            /* Non-POSIX: Special result code that means "No card found".
+             * The filesystem is still mounted, awaiting card insertion. */
+            print_string("No card found\n");
+        } else {
+            print_string("ok\n");
+        }
     }
 
     /* Revert to a normal umask for shell operations */

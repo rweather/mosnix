@@ -12,8 +12,8 @@
 #include <mosnix/sched.h>
 #include <mosnix/syscall.h>
 #include <mosnix/target.h>
-#include "drivers/sdcard/sdcard.h"
 #include "fs/ram/ramfs.h"
+#include "fs/fat/fatfs.h"
 #include <stdio.h>
 
 int main(void)
@@ -21,11 +21,8 @@ int main(void)
     /* Initialize all kernel subsystems */
     kmalloc_init();
     ramfs_init();
+    fatfs_init();
     file_init();
-#if defined(CONFIG_SD) && defined(CONFIG_SPI)
-    sd_init();
-    sd_detect();
-#endif
     proc_init();
 
     /* Launch the shell process as our version of "init" */

@@ -129,6 +129,9 @@ struct file
     /** Pointer to the filesystem inode, or NULL if not in a filesystem */
     struct inode *inode;
 
+    /** Extra information about the open file on FAT filesystems */
+    struct fatfs_inode_info *fatfs_info;
+
     /** Current seek position in the file, if it is seekable */
     off_t posn;
 };
