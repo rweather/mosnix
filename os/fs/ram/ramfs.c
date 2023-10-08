@@ -15,6 +15,11 @@
 #include <errno.h>
 #include <string.h>
 
+#ifndef RAMFS_DOT_DIRS
+/* Define to 1 to define the "." and ".." directories, or 0 to save space */
+#define RAMFS_DOT_DIRS 0
+#endif
+
 static struct inode *root;
 
 static int ramfs_is_dot(const struct ramfs_dirent *dirent)
@@ -221,8 +226,6 @@ static int ramfs_mknod
 {
     struct ramfs_dirent *dirent;
     struct ramfs_dirent **ptr;
-    struct ramfs_dirent *dot;
-    struct ramfs_dirent *dotdot;
     struct inode *child;
 
     /* Directory check on the parent, just in case */
@@ -259,8 +262,11 @@ static int ramfs_mknod
     memcpy(dirent->name, name, namelen);
     dirent->inode = child;
 
+#if RAMFS_DOT_DIRS
     /* If the child is a directory, also create the "." and ".." entries */
     if (S_ISDIR(mode)) {
+        struct ramfs_dirent *dot;
+        struct ramfs_dirent *dotdot;
         dot = kmalloc_buf_alloc();
         if (!dot) {
             inode_deref(child);
@@ -284,6 +290,7 @@ static int ramfs_mknod
         dotdot->inode = dir;
         child->ramfs_dir = dot;
     }
+#endif
 
     /* Add the new directory entry to the end of the parent directory */
     ptr = &(dir->ramfs_dir);
@@ -352,9 +359,6 @@ struct inode_operations const ramfs_operations = {
 
 void ramfs_init(void)
 {
-    struct ramfs_dirent *dot;
-    struct ramfs_dirent *dotdot;
-
     /* Create the root inode */
     root = inode_alloc(&ramfs_operations);
     root->mode = S_IRUSR | S_IWUSR | S_IXUSR | S_IFDIR |
@@ -362,9 +366,12 @@ void ramfs_init(void)
     inode_ref(root); /* Reference for the "." link */
     inode_ref(root); /* Reference for the ".." link */
 
+#if RAMFS_DOT_DIRS
     /* Create the "." and ".." links back to the root inode.  We arrange it
      * so that ".." from the root directory will go to the root directory.
      * The circular references here make it impossible to rmdir the root. */
+    struct ramfs_dirent *dot;
+    struct ramfs_dirent *dotdot;
     dot = kmalloc_buf_alloc();
     dotdot = kmalloc_buf_alloc();
     dot->namelen = 1;
@@ -376,6 +383,7 @@ void ramfs_init(void)
     dotdot->name[1] = '.';
     dotdot->inode = root;
     root->ramfs_dir = dot;
+#endif
 }
 
 struct inode *inode_get_root(void)
