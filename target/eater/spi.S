@@ -69,6 +69,7 @@ spi_receive_byte:
   lda #2
   tsb SPI_PORT              ; Turn on MOSI so that we send a $FF byte.
   ldx #8
+  sei                       ; Disable interrupts for precise timing.
 .Lspi_receive_bit:
   asl __rc5
   inc SPI_PORT              ; Raise SCLK.
@@ -79,6 +80,7 @@ spi_receive_byte:
 .Lspi_receive_bit_0:
   dex
   bne .Lspi_receive_bit
+  cli                       ; Re-enable interrupts.
   plx
   lda __rc5
   rts
