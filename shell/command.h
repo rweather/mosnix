@@ -67,6 +67,7 @@ void cmd_exec(char *line);
 /* Command handlers */
 int cmd_chdir(int argc, char **argv);
 int cmd_ls(int argc, char **argv);
+int cmd_mount(int argc, char **argv);
 int cmd_pwd(int argc, char **argv);
 int cmd_uname(int argc, char **argv);
 

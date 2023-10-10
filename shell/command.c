@@ -23,6 +23,7 @@ struct builtin_command
 static struct builtin_command const builtins[] = {
     {"cd",          cmd_chdir},
     {"ls",          cmd_ls},
+    {"mount",       cmd_mount},
     {"pwd",         cmd_pwd},
     {"uname",       cmd_uname},
 };

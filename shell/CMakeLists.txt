@@ -5,8 +5,10 @@ set(SHELL_SOURCES
     command.h
     command.c
     div10.S
+    fstab.h
     ls.c
     main.c
+    mount.c
     print.c
     print.h
     pwd.c

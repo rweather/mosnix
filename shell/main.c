@@ -8,6 +8,7 @@
 
 #include "print.h"
 #include "command.h"
+#include "fstab.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/mount.h>
@@ -57,6 +58,7 @@ void init(void)
     if (make_rootfs() < 0) {
         print_error(NULL);
     } else {
+        add_fstab("/", "ramfs", "ramfs", "rw");
         print_string("ok\n");
     }
 
@@ -73,6 +75,9 @@ void init(void)
             print_string("No card found\n");
         } else {
             print_string("ok\n");
+        }
+        if (result >= 0) {
+            add_fstab("/mnt/sd", "/dev/mmcblk0", "vfat", "ro");
         }
     }
 
