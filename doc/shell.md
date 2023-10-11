@@ -24,15 +24,30 @@ Examples:
 
     /root# cd /usr
     /usr# cd /mnt/sd
-    /mnt/sd# cd -
     /mnt/sd# pwd
     /mnt/sd
+    /mnt/sd# cd -
     /usr# cd
     /root# _
 
 ## ls
 
-TODO
+Lists the contents of a directory.
+
+* `ls`: List the contents of the current directory.
+* `ls dir`: List the contents of a specified directory.
+* `ls dir1 dir2`: List the contents of multiple directories.
+
+The following options are currently supported:
+
+* `-a`: Show hidden files that begin with `.` as well as normal files.
+* `-l`: Show the file details in long format with mode and size.
+* `-F`: Show the file or directory type with `*` and `/' after the filename.
+
+## mount
+
+Lists all active mount points.  It not possible to mount or unmount
+other directories at the moment.
 
 ## pwd
 
@@ -46,8 +61,8 @@ Options:
 * `-a`: Print all identification strings.
 * `-s`: Print the system name ("MOSnix").
 * `-n`: Print the node name ("mosnix").
-* `-r`: Print the kernel release number; same as `-v`.
-* `-v`: Print the kernel version.
+* `-r`: Print the kernel release number.
+* `-v`: Print the version of the hardware the kernel is running on.
 * `-m`: Print the machine architecture, such as `mos6502` or `mos65c02`.
 
 Without options, the behaviour is the same as `uname -s`.
