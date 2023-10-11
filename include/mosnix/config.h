@@ -69,6 +69,13 @@
 #endif
 
 /**
+ * @brief Number of buffers in the buffer cache.
+ */
+#ifndef CONFIG_NUM_BUFFERS
+#define CONFIG_NUM_BUFFERS 100
+#endif
+
+/**
  * @brief Maximum number of bytes in a filesystem path, including the
  * terminating NUL.
  */

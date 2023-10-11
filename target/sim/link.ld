@@ -33,11 +33,7 @@ __stack = ORIGIN(ram) + LENGTH(ram);
 
 /* Tell the kernel where its usable user space RAM lies */
 user_space_ram_start = 0x1000;
-user_space_ram_end = 0x6800;
-
-/* Tell the kernel where the buffer cache is located in RAM */
-buffer_cache_ram_start = 0x6800;
-buffer_cache_ram_end = 0x7800;
+user_space_ram_end = 0x7800;
 
 /* Tell the kernel where the shell code lies */
 shell_start = 0x8000;
