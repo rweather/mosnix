@@ -16,13 +16,22 @@ extern "C" {
 #endif
 
 /**
- * @brief Opens the primary console tty.
+ * @brief Opens the primary console tty with a default line discipline.
  *
  * @param[out] file The file descriptor to initialize for the console.
  *
  * @return Zero on success or a negative error code.
  */
-int open_console_tty(struct file *file);
+int open_dev_tty0(struct file *file);
+
+/**
+ * @brief Opens the primary console tty in raw mode.
+ *
+ * @param[out] file The file descriptor to initialize for the console.
+ *
+ * @return Zero on success or a negative error code.
+ */
+int open_dev_console(struct file *file);
 
 #ifdef __cplusplus
 }

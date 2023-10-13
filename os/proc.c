@@ -173,9 +173,9 @@ void proc_start_shell(void)
     /* Create the shell process; assumed to always succeed */
     proc_create_internal(0, shell_start, 1, (char **)shell_argv, &p);
 
-    /* Set up the console tty as stdin, stdout, and stderr for the shell */
+    /* Set up the console tty0 as stdin, stdout, and stderr for the shell */
     console = file_new(O_RDWR, 0660);
-    open_console_tty(console);
+    open_dev_tty0(console);
     p->fd[0] = console;
     file_ref(console);
     p->fd[1] = console;

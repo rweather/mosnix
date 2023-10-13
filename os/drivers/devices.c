@@ -37,10 +37,13 @@ static struct device_info const char_devices[] = {
     {DEV_ZERO,          open_dev_zero},
     {DEV_FULL,          open_dev_full},
 
-    /* There are multiple standard names for the console tty */
-    {DEV_TTY,           open_console_tty},
-    {DEV_TTY0,          open_console_tty},
-    {DEV_CONSOLE,       open_console_tty},
+    /* There are multiple standard names for the console tty.
+     * In this implementation we treat /dev/console as special in that
+     * it will access the console in raw mode with no line discipline.
+     * The /dev/tty and /dev/tty0 devices provide a line discipline. */
+    {DEV_TTY,           open_dev_tty0},
+    {DEV_TTY0,          open_dev_tty0},
+    {DEV_CONSOLE,       open_dev_console},
 
     {0,                 0},
 };
