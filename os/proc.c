@@ -9,6 +9,7 @@
 #include <mosnix/attributes.h>
 #include <mosnix/proc.h>
 #include <mosnix/file.h>
+#include <mosnix/kmalloc.h>
 #include <mosnix/printk.h>
 #include <mosnix/sched.h>
 #include <mosnix/syscall.h>
@@ -18,10 +19,6 @@
 #include <stdlib.h>
 #include <errno.h>
 
-/** Process control block for the shell process.  All other blocks are
- *  allocated in user space memory on-demand. */
-static struct proc shell_proc ATTR_SECTION_NOINIT;
-
 /** Process table for the kernel */
 static struct proc *process_table[CONFIG_PROC_MAX];
 
@@ -30,18 +27,14 @@ uint8_t volatile in_kernel ATTR_SECTION_ZP;
 
 void proc_init(void)
 {
-    shell_proc.pid = 1;
-    shell_proc.ppid = PID_UNUSED;
-    shell_proc.state = PROC_UNUSED;
     current_proc = NULL;
 }
 
-static int proc_format_args(struct proc *proc, int argc, char **argv)
+int proc_create(pid_t ppid, int argc, char **argv, struct proc **proc)
 {
-    struct arg_array *aa;
-    char *data;
-    size_t size;
-    int arg;
+    struct proc *p;
+    pid_small_t pid;
+    char **argv_copy;
 
     /* Validate the parameters */
     if (!argv)
@@ -51,67 +44,39 @@ static int proc_format_args(struct proc *proc, int argc, char **argv)
     if (argc > CONFIG_ARGC_MAX)
         return -E2BIG;
 
-    /* Prepare to convert the arguments into an in-place array in proc->args */
-    struct arg_array {
-        int argc;
-        char *argv[CONFIG_ARGC_MAX + 1];
-    };
-    aa = (struct arg_array *)(proc->args);
-    size = argc * 2 + 4;
-    data = proc->args + size;
-    size = CONFIG_ARG_MAX - size;
-
-    /* Convert the arguments */
-    aa->argc = argc;
-    for (arg = 0; arg < argc; ++arg) {
-        char *av = argv[arg];
-        size_t len;
-        if (!av)
-            return -EFAULT;
-        len = strlen(av);
-        if (len >= size)
-            return -E2BIG;
-        aa->argv[arg] = data;
-        memcpy(data, av, len);
-        data[len] = '\0';
-        data += len + 1;
-        size -= len + 1;
-    }
-    aa->argv[arg] = 0;
-
-    /* Arguments are ready to go */
-    return 0;
-}
-
-int proc_create(pid_t ppid, int argc, char **argv, struct proc **proc)
-{
-    struct proc *p;
-    int err;
-    pid_small_t pid;
-
-    /* Find the next available unused process */
-    if (shell_proc.state == PROC_UNUSED) {
-        /* First process created is always the shell */
-        p = &shell_proc;
-    } else {
-        /* TODO: allocate the process block from user space memory */
+    /* Allocate user space memory for the arguments first */
+    argv_copy = kmalloc_copy_argv(argc, argv);
+    if (!argv_copy) {
         return -ENOMEM;
     }
 
-    /* Zero the entire process structure */
-    pid = p->pid;
-    memset(p, 0, sizeof(struct proc));
-    p->pid = pid;
-    p->ppid = ppid;
-    process_table[pid - 1] = p;
+    /* Find the next available unused process */
+    for (pid = 0; pid < CONFIG_PROC_MAX; ++pid) {
+        if (process_table[pid] == NULL) {
+            break;
+        }
+    }
+    if (pid >= CONFIG_PROC_MAX) {
+        kmalloc_user_free(argv_copy);
+        return -ENOMEM;
+    }
 
-    /* Format the argc/argv arguments into the process structure */
-    err = proc_format_args(p, argc, argv);
-    if (err != 0)
-        return err;
+    /* Allocate user space memory for the process structure */
+    p = kmalloc_user_alloc(sizeof(struct proc));
+    if (!p) {
+        kmalloc_user_free(argv_copy);
+        return -ENOMEM;
+    }
+    process_table[pid] = p;
+
+    /* Initialize the process structure */
+    memset(p, 0, sizeof(struct proc));
+    p->pid = pid + 1; /* Process identifiers are 1-based */
+    p->ppid = ppid;
+    p->argv = argv_copy;
 
     /* Allocate zero page memory to the process and clear it */
-    p->zp = (uint8_t *)((pid + 1) * PROC_ZP_SIZE);
+    p->zp = (uint8_t *)((pid + 2) * PROC_ZP_SIZE);
     memset(p->zp, 0, PROC_ZP_SIZE);
 
     /* Inherit properties from the parent, or set the defaults for pid 1 */
@@ -131,7 +96,10 @@ int proc_create(pid_t ppid, int argc, char **argv, struct proc **proc)
 
 void proc_free(struct proc *proc)
 {
+    process_table[proc->pid - 1] = NULL;
+    kmalloc_user_free(proc->argv);
     proc->state = PROC_UNUSED;
+    kmalloc_user_free(proc);
     /* TODO */
 }
 
@@ -186,7 +154,7 @@ int proc_create_internal
     proc_push_return_stack(p, ((uintptr_t)func) + 1);
     proc_push_byte(p, 0x00); /* P flags to pass to the new process */
     p->context.AX = argc;
-    proc_set_arg2(p, (uint16_t)(uintptr_t)(p->args + 2)); /* argv */
+    proc_set_arg2(p, (uint16_t)(uintptr_t)(p->argv));
 
     /* Process is now runnable */
     sched_set_runnable(p);

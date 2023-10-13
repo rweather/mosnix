@@ -165,8 +165,8 @@ struct proc
     /** Current working directory for the process. */
     char cwd[CONFIG_PATH_MAX];
 
-    /** Arguments to the process, formatted as an array of strings. */
-    char args[CONFIG_ARG_MAX];
+    /** Arguments to the process, allocated using kmalloc. */
+    char **argv;
 };
 
 /**
