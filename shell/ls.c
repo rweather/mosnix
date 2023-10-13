@@ -9,10 +9,12 @@
 #include "command.h"
 #include <dirent.h>
 #include <sys/stat.h>
+#include <sys/syscall.h>
 #include <sys/sysmacros.h>
+#include <unistd.h>
 #include <errno.h>
 
-#define LS_COLUMN       0x01
+#define LS_BRIEF        0x01
 #define LS_LONG         0x02
 #define LS_HIDDEN       0x04
 #define LS_CLASSIFY     0x08
@@ -27,18 +29,17 @@ int cmd_ls(int argc, char **argv)
     int opt, exitval;
 
     /* Parse the command-line options */
-    while ((opt = getopt(argc, argv, "ClaF")) >= 0) {
+    while ((opt = getopt(argc, argv, "laF")) >= 0) {
         switch (opt) {
-        case 'C':   options |= LS_COLUMN; break;
         case 'l':   options |= LS_LONG; break;
         case 'a':   options |= LS_HIDDEN; break;
         case 'F':   options |= LS_CLASSIFY; break;
         default: return 1;
         }
     }
-    if (!(options & (LS_COLUMN | LS_LONG))) {
-        /* Default to column mode */
-        options |= LS_COLUMN;
+    if (!(options & (LS_BRIEF | LS_LONG))) {
+        /* Default to brief mode */
+        options |= LS_BRIEF;
     }
 
     /* List files for all directories / wildcards on the command-line */
@@ -81,9 +82,9 @@ static void print_mode(u_char type, mode_t mode)
 
 static int list(const char *spec, unsigned char options)
 {
-    DIR *dir = opendir(spec);
-    struct dirent *entry;
-    if (!dir) {
+    int dir = syscall(SYS_opendir, spec);
+    static struct dirent entry;
+    if (dir < 0) {
         print_error(spec);
         return 0;
     }
@@ -95,32 +96,32 @@ static int list(const char *spec, unsigned char options)
     }
     /* TODO: sort the entries in the directory on name */
     errno = 0;
-    while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_name[0] == '.' && (options & LS_HIDDEN) == 0) {
+    while (read(dir, &entry, sizeof(entry)) == (int)sizeof(entry)) {
+        if (entry.d_name[0] == '.' && (options & LS_HIDDEN) == 0) {
             continue;
         }
         if (options & LS_LONG) {
-            print_mode(entry->d_type, entry->d_mode_np);
-            if (entry->d_type == DT_CHR || entry->d_type == DT_BLK) {
-                dev_t dev = (dev_t)(entry->d_ino);
+            print_mode(entry.d_type, entry.d_mode_np);
+            if (entry.d_type == DT_CHR || entry.d_type == DT_BLK) {
+                dev_t dev = (dev_t)(entry.d_ino);
                 print_number(major(dev), 6);
                 print_char(',');
                 print_number(minor(dev), 4);
             } else {
-                print_number(entry->d_ino, 11);
+                print_number(entry.d_ino, 11);
             }
             /* TODO: print the file modification time */
             print_char(' ');
         }
-        print_string(entry->d_name);
+        print_string(entry.d_name);
         if (options & LS_CLASSIFY) {
-            if (entry->d_type == DT_DIR) {
+            if (entry.d_type == DT_DIR) {
                 print_char('/');
-            } else if (entry->d_type == DT_LNK) {
+            } else if (entry.d_type == DT_LNK) {
                 print_char('@');
-            } else if (entry->d_type == DT_REG) {
+            } else if (entry.d_type == DT_REG) {
                 /* Detect executable regular files */
-                if (entry->d_mode_np & (S_IXUSR | S_IXGRP | S_IXOTH)) {
+                if (entry.d_mode_np & (S_IXUSR | S_IXGRP | S_IXOTH)) {
                     print_char('*');
                 }
             }
@@ -132,6 +133,6 @@ static int list(const char *spec, unsigned char options)
         /* An error occurred during readdir() */
         print_error(spec);
     }
-    closedir(dir);
+    close(dir);
     return 1;
 }
