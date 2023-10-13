@@ -58,14 +58,34 @@ void kmalloc_buf_free(void *buf);
         [(sizeof(struct type) <= KMALLOC_BUF_SIZE) * 2 - 1]
 
 /**
- * @brief Allocates data in process space to load and relocate a process.
+ * @brief Allocates data in user space.
  *
- * @param[in] size Number of bytes of process space data to allocate.
+ * @param[in] size Number of bytes of user space data to allocate.
  *
- * @return A pointer into process space, or NULL if there is insufficient
+ * @return A pointer into user space, or NULL if there is insufficient
  * memory available.
  */
-void *kmalloc_proc_alloc(size_t size);
+void *kmalloc_user_alloc(size_t size);
+
+/**
+ * @brief Frees data in user space.
+ *
+ * @param[in] ptr Points to the data block to free.
+ */
+void kmalloc_user_free(void *ptr);
+
+/**
+ * @brief Allocates user space memory and copies an argument array into it.
+ *
+ * @param[in] argc Number of arguments.
+ * @param[in] argv Pointer to the argument array.
+ *
+ * @return A pointer to the allocated array, or NULL if out of memory.
+ *
+ * The arguments are packed into a contiguous block, so freeing the
+ * returned pointer is sufficient to deallocate the entire array.
+ */
+char **kmalloc_copy_argv(int argc, char **argv);
 
 #ifdef __cplusplus
 }

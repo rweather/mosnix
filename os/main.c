@@ -20,6 +20,7 @@ int main(void)
 {
     /* Initialize all kernel subsystems */
     kmalloc_init();
+    sched_init();
     ramfs_init();
     fatfs_init();
     file_init();

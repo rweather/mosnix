@@ -17,7 +17,7 @@
  * @brief List of all runnable processes in the system, except for the
  * one that is currently running.
  */
-static struct run_queue runnable = TAILQ_HEAD_INITIALIZER(runnable);
+static struct run_queue runnable;
 
 /**
  * @brief Switches to a different process and continues running it.
@@ -32,6 +32,11 @@ static struct run_queue runnable = TAILQ_HEAD_INITIALIZER(runnable);
  * from where it left off.
  */
 ATTR_LEAF int proc_switch_to(struct proc *proc);
+
+void sched_init(void)
+{
+    TAILQ_INIT(&runnable);
+}
 
 void sched_set_runnable(struct proc *proc)
 {

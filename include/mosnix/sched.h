@@ -16,6 +16,11 @@ extern "C" {
 #endif
 
 /**
+ * @brief Initialize the scheduler.
+ */
+void sched_init(void);
+
+/**
  * @brief Start the scheduler running.  This function never returns.
  */
 void sched_start(void);
