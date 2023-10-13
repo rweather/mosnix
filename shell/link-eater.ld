@@ -13,7 +13,7 @@ MEMORY {
   ram : ORIGIN = 0x3800, LENGTH = 0x800
 
   /* Put the shell's code into ROM */
-  rom : ORIGIN = 0x8000, LENGTH = 0x2800
+  rom : ORIGIN = 0x8000, LENGTH = 0x2000
 }
 
 REGION_ALIAS("c_readonly", rom)
