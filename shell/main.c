@@ -10,6 +10,7 @@
 #include "command.h"
 #include "fstab.h"
 #include <stdio.h>
+#include <time.h>
 #include <unistd.h>
 #include <sys/mount.h>
 
@@ -46,6 +47,7 @@ static int get_line(char *buf, size_t size)
  */
 void init(void)
 {
+    struct timespec ts;
     int result;
 
     /* Set the full umask so that the root filesystem nodes are
@@ -83,6 +85,14 @@ void init(void)
 
     /* Revert to a normal umask for shell operations */
     umask(022);
+
+    /* Print the boot time in seconds */
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    print_string("Boot time ... ");
+    if (ts.tv_nsec >= 500000000L)
+        ++(ts.tv_sec);
+    print_number(ts.tv_sec, 2);
+    print_string("s\n");
 }
 
 int main(int argc, char *argv[])

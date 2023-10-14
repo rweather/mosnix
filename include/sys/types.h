@@ -29,6 +29,7 @@ typedef unsigned long blkcnt_t;
 typedef unsigned int blksize_t;
 typedef char *caddr_t;
 typedef unsigned long clock_t;
+typedef unsigned char clockid_t;
 typedef long daddr_t;
 typedef unsigned int dev_t;
 typedef unsigned short gid_t;
@@ -47,6 +48,12 @@ typedef long suseconds_t;
 typedef long time_t;
 typedef unsigned short uid_t;
 typedef unsigned long useconds_t;
+
+struct timespec
+{
+    time_t tv_sec;
+    long tv_nsec;
+};
 
 #ifdef __cplusplus
 }

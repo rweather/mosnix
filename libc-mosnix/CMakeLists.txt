@@ -12,6 +12,7 @@ add_library(libc-mosnix STATIC
     stat.c
     strerror.c
     syscall.S
+    time.c
     uname.c
     unistd.c
     yield.c

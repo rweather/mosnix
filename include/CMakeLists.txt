@@ -5,6 +5,7 @@ install(FILES
     fcntl.h
     getopt.h
     syscall.h
+    time.h
     unistd.h
 DESTINATION ${CMAKE_INSTALL_DATADIR}/mosnix/include)
 

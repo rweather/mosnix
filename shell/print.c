@@ -39,7 +39,7 @@ ATTR_NOINLINE void print_number(unsigned long value, unsigned char size)
 {
     char buf[size];
     unsigned char count = 0;
-    while (count < 10 && value != 0) {
+    while (count < 10 && count < size && value != 0) {
         buf[count] = div10(&value) + '0';
         ++count;
     }

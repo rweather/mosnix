@@ -144,6 +144,18 @@ struct sys_setegid_s {
     gid_t gid;
 };
 
+struct sys_getmonotime_s {
+    long long *t;
+};
+
+struct sys_getrealtime_s {
+    long long *t;
+};
+
+struct sys_setrealtime_s {
+    long long t;
+};
+
 struct sys_uname_s {
     struct utsname *buf;
 };
@@ -185,6 +197,9 @@ struct sys_strerror_s {
 /*  65 */ SYS_ATTR int sys_getegid(void);
 /*  66 */ SYS_ATTR int sys_setgid(struct sys_setgid_s *args);
 /*  67 */ SYS_ATTR int sys_setegid(struct sys_setegid_s *args);
+/*  80 */ SYS_ATTR int sys_getmonotime(struct sys_getmonotime_s *args);
+/*  81 */ SYS_ATTR int sys_getrealtime(struct sys_getrealtime_s *args);
+/*  82 */ SYS_ATTR int sys_setrealtime(struct sys_setrealtime_s *args);
 /* 100 */ SYS_ATTR int sys_uname(struct sys_uname_s *args);
 /* 101 */ SYS_ATTR int sys_strerror(struct sys_strerror_s *args);
 /* N/A */ SYS_ATTR int sys_notimp(void);

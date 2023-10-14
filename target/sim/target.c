@@ -43,13 +43,8 @@ void _exit(int status)
 
 __attribute__((alias("_exit"))) void _Exit(int status);
 
-clock_t sys_clock(void)
+void sys_monoclock(long long *t)
 {
-  // reading first byte latches whole 32-bit value
-  // so it needs to be read byte by byte in correct order
-  unsigned long ticks;
-  for (int i = 0; i < 4; i++) {
-    ((char *)&ticks)[i] = sim_reg_iface->clock[i];
-  }
-  return ticks;
+  // Not implemented on this platform at present.
+  *t = 0;
 }

@@ -4,7 +4,7 @@
 #include <bits/errno.h>
 
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
 
 extern int errno;

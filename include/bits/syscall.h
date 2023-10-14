@@ -43,6 +43,9 @@
 #define SYS_getegid 65
 #define SYS_setgid 66
 #define SYS_setegid 67
+#define SYS_getmonotime 80
+#define SYS_getrealtime 81
+#define SYS_setrealtime 82
 #define SYS_uname 100
 #define SYS_strerror 101
 

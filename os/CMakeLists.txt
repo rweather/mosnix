@@ -15,6 +15,7 @@ set(KERNEL_SOURCES
     sem.c
     strerror.c
     switcher.S
+    time.c
     uname.c
     util.c
     drivers/devices.c

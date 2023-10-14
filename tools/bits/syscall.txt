@@ -49,6 +49,12 @@
 66  |setgid         |int        |gid_t gid
 67  |setegid        |int        |gid_t gid
 #
+# Time management
+#
+80  |getmonotime%   |int        |long long *t
+81  |getrealtime%   |int        |long long *t
+82  |setrealtime%   |int        |long long t
+#
 # Other
 #
 100 |uname%         |int        |struct utsname *buf

@@ -410,12 +410,6 @@ int inode_access(const struct inode *inode, int mode)
     }
 }
 
-time_t inode_get_mtime(void)
-{
-    /* TODO */
-    return 0;
-}
-
 /* Default implementations of inode operations */
 
 int inode_release_default(struct inode *inode)

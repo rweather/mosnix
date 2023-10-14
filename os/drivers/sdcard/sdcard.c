@@ -90,7 +90,7 @@ ATTR_NOINLINE static void sd_debug_block
 #endif
 
 /* Amount of time to wait before timing out the SD card detect */
-#define SD_INIT_TIMEOUT (2 * SYS_CLOCKS_PER_SEC)
+#define SD_INIT_TIMEOUT (2 * 256) /* 2s in ticks of 1/256'th of a second */
 
 sd_info_t sd_info;
 
@@ -220,7 +220,7 @@ ATTR_NOINLINE uint8_t sd_detect(void)
         1, 2, 4, 8, 16, 32, 64, 128
     };
     struct sd_card_command cmd;
-    unsigned long timeout_base;
+    unsigned short timeout_base;
     uint8_t status;
     uint8_t version;
 

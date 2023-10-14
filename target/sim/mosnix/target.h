@@ -18,8 +18,8 @@ extern "C" {
 /* Name of the target for uname */
 #define CONFIG_TARGET_NAME "mos-sim"
 
-#define SYS_CLOCKS_PER_SEC 1000000UL
-extern clock_t sys_clock(void);
+/* Get the monotonic system clock in 1/256'ths of a second */
+extern void sys_monoclock(long long *t);
 
 /* mos-sim target uses the basic tty driver as its console */
 #define CONFIG_CONSOLE_BASIC_TTY 1

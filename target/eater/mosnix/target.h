@@ -18,8 +18,11 @@ extern "C" {
 /* Name of the target for uname */
 #define CONFIG_TARGET_NAME "eater"
 
-#define SYS_CLOCKS_PER_SEC 1000UL
-extern clock_t sys_clock(void);
+/* Get the monotonic system clock in 1/256'ths of a second */
+extern void sys_monoclock(long long *t);
+
+/* Get the low 16 bits of the monotonic system clock */
+extern unsigned short sys_clock(void);
 
 /* eater target uses the basic tty driver as its console */
 #define CONFIG_CONSOLE_BASIC_TTY 1
