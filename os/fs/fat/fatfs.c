@@ -12,6 +12,7 @@
 #include <mosnix/target.h>
 #include <mosnix/file.h>
 #include <mosnix/proc.h>
+#include <mosnix/attributes.h>
 #include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
@@ -48,15 +49,16 @@ static uint8_t fatfs_info_new
 }
 
 /**
- * @brief Reads the next FAT directory entry.
+ * @brief Prepare to read from a file or directory cluster.
  *
- * @param[in,out] info The information structure for the FAT directory.
- * @param[out] entry Returns a pointer to the directory entry on exit.
+ * @param[in,out] info The information structure for the file.
+ * @param[out] data Returns a pointer to the next data byte.
  *
- * @return 0 at EOF, 1 if an entry was read, or a negative error code.
+ * @return 0 at EOF, greater than 0 for the number of bytes that are
+ * available to be read, or a negative error code.
  */
-static int fatfs_info_read_dirent
-    (struct fatfs_inode_info *info, const struct fat_dir_entry **entry)
+static int fatfs_info_read_prepare
+    (struct fatfs_inode_info *info, const void **data)
 {
     uint32_t block = info->block;
     uint16_t offset;
@@ -101,10 +103,34 @@ static int fatfs_info_read_dirent
         return -EIO;
     }
 
-    /* Return a pointer to the next directory entry and skip over it */
-    *entry = (const struct fat_dir_entry *)(sd_info.block + offset);
-    info->offset = offset + sizeof(struct fat_dir_entry);
-    return 1;
+    /* Return a pointer to the remaining data in the block */
+    info->offset = offset;
+    *data = sd_info.block + offset;
+    return SD_BLKSIZE - offset;
+}
+
+/**
+ * @brief Reads the next FAT directory entry.
+ *
+ * @param[in,out] info The information structure for the FAT directory.
+ * @param[out] entry Returns a pointer to the directory entry on exit.
+ *
+ * @return 0 at EOF, 1 if an entry was read, or a negative error code.
+ */
+static int fatfs_info_read_dirent
+    (struct fatfs_inode_info *info, const struct fat_dir_entry **entry)
+{
+    const void *data;
+    int size = fatfs_info_read_prepare(info, &data);
+    if (size <= 0) {
+        return size;
+    } else if (size <= (int)sizeof(struct fat_dir_entry)) {
+        return -EINVAL;
+    } else {
+        info->offset += sizeof(struct fat_dir_entry);
+        *entry = (const struct fat_dir_entry *)data;
+        return 1;
+    }
 }
 
 static ssize_t fatfs_dir_read(struct file *file, void *data, size_t size)
@@ -134,6 +160,37 @@ static ssize_t fatfs_dir_read(struct file *file, void *data, size_t size)
     return result;
 }
 
+static ssize_t fatfs_file_read(struct file *file, void *data, size_t size)
+{
+    struct fatfs_inode_info *info = file->fatfs_info;
+    ssize_t result = 0;
+    unsigned char *d = (unsigned char *)data;
+    const void *file_data;
+    uint32_t remaining;
+    int read_size;
+    while (size > 0) {
+        /* Clamp the size to the number of bytes remaining before EOF */
+        remaining = info->size - file->posn;
+        if (remaining < size)
+            size = (size_t)remaining;
+        if (!size)
+            break;
+
+        /* How many bytes can be read from the current cluster? */
+        read_size = fatfs_info_read_prepare(info, &file_data);
+        if (read_size < 0) {
+            return read_size;
+        } else if (!read_size) {
+            break;
+        }
+        memcpy(d, file_data, read_size);
+        d += read_size;
+        result += read_size;
+        size -= read_size;
+    }
+    return result;
+}
+
 static int fatfs_close(struct file *file)
 {
     kmalloc_buf_free(file->fatfs_info);
@@ -143,6 +200,14 @@ static int fatfs_close(struct file *file)
 static struct file_operations const fatfs_dir_operations = {
     .close = fatfs_close,
     .read = fatfs_dir_read,
+    .write = file_write_default,
+    .lseek = file_lseek_default,
+    .ioctl = file_ioctl_default
+};
+
+static struct file_operations const fatfs_file_operations = {
+    .close = fatfs_close,
+    .read = fatfs_file_read,
     .write = file_write_default,
     .lseek = file_lseek_default,
     .ioctl = file_ioctl_default
@@ -289,15 +354,28 @@ static int fatfs_open(struct file *file)
         }
         file->fatfs_info = info;
         if (!fatfs_info_new(info, cluster, 0)) {
+            kmalloc_buf_free(info);
             return -EIO;
         }
 
         /* Set the file descriptor operations table */
         file->op = &fatfs_dir_operations;
         return 0;
+    } else if (S_ISREG(file->mode)) {
+        /* Open a regular file */
+        uint32_t cluster = info->first_cluster;
+        info = kmalloc_buf_alloc();
+        if (!info) {
+            return -ENOMEM;
+        }
+        file->fatfs_info = info;
+        if (!fatfs_info_new(info, cluster, info->size)) {
+            kmalloc_buf_free(info);
+            return -EIO;
+        }
+        file->op = &fatfs_file_operations;
+        return 0;
     } else {
-        /* TODO: opening regular files */
-        (void)file;
         return -EPERM;
     }
 }
