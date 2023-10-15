@@ -14,8 +14,8 @@ if(NOT CMAKE_BUILD_TYPE)
     endif()
 endif()
 set(CMAKE_C_FLAGS "-Wall -Wextra ${CMAKE_C_FLAGS}")
-set(CMAKE_C_FLAGS_DEBUG "-g -Os")
-set(CMAKE_C_FLAGS_RELEASE "-Os")
+set(CMAKE_C_FLAGS_DEBUG "-g -Oz")
+set(CMAKE_C_FLAGS_RELEASE "-Oz")
 
 # We need the llvm-mos tools to cross-compile the kernel and user space.
 find_program(MOS_CLANG NAMES mos-common-clang REQUIRED)
