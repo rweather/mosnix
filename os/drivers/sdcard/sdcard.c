@@ -338,6 +338,15 @@ ATTR_NOINLINE uint8_t sd_detect(void)
     spi_receive(sd_info.block, 18);
     sd_debug_block("CSD", sd_info.block, 16);
 
+#if 1
+    /* Use an assembly replacement for the size code because we
+     * can do the shifts more efficiently in assembly code. */
+    extern uint32_t sd_get_size(void);
+    sd_info.part_size = sd_get_size();
+    if (!sd_info.part_size) {
+        goto fail;
+    }
+#else
     /* Get the number of blocks on the SD card from the CSD */
     status = sd_info.block[0] & 0xC0;
     if (status == 0x00) {
@@ -363,6 +372,7 @@ ATTR_NOINLINE uint8_t sd_detect(void)
     } else {
         goto fail;
     }
+#endif
 
     /* See if we have a partition table in block 0 */
     sd_debug("MBR\n");

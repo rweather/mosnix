@@ -112,3 +112,99 @@ sd_cluster_to_block:
   sta __rc2
   sta __rc3
   rts
+
+;
+; uint32_t sd_get_size(void)
+;
+; Get the size of the SD card in blocks.
+;
+.global sd_get_size
+.section .text.sd_get_size,"ax",@progbits
+sd_get_size:
+  lda sd_info+ofs_block         ; Check the CSD version.
+  and #$C0
+  beq .Lsd_get_size_v1
+  cmp #$40
+  beq .Lsd_get_size_v2
+  lda #0                        ; Unknown version, return zero.
+  tax
+  sta __rc2
+  sta __rc3
+  rts
+;
+.Lsd_get_size_v2:
+;
+; Version 2: (C_SIZE + 1) << 10
+;
+  lda sd_info+ofs_block+9       ; Calculate (C_SIZE + 1) << 8.
+  clc
+  adc #1
+  sta __rc4
+  lda sd_info+ofs_block+8
+  adc #0
+  sta __rc2
+  lda sd_info+ofs_block+7
+  adc #0
+  sta __rc3
+;
+  asl __rc4                     ; Shift up by another 2 for "<< 10".
+  rol __rc2
+  rol __rc3
+  asl __rc4
+  rol __rc2
+  rol __rc3
+  lda #0
+  ldx __rc4
+  rts
+;
+.Lsd_get_size_v1:
+;
+; Version 1: (C_SIZE + 1) << (C_SIZE_MULT + READ_BL_LEN - 7)
+;
+  sta __rc2                     ; Set rc4:rc5:rc2:rc3 to (CSIZE + 1).
+  sta __rc3
+  asl sd_info+ofs_block+8       ; CSD is destroyed, but we don't need it
+  rol sd_info+ofs_block+7       ; after this function finishes.
+  rol sd_info+ofs_block+6
+  asl sd_info+ofs_block+8
+  lda sd_info+ofs_block+7
+  rol
+  sta __rc4
+  lda sd_info+ofs_block+6
+  rol
+  and #$0F
+  sta __rc5
+  lda __rc4
+  clc
+  adc #1
+  sta __rc4
+  lda __rc5
+  adc #0
+  sta __rc5
+;
+  lda sd_info+ofs_block+9       ; rc6 = C_SIZE_MULT
+  asl sd_info+ofs_block+10
+  rol
+  and #$07
+  sta __rc6
+  lda sd_info+ofs_block+5       ; A = READ_BL_LEN
+  and #$0F
+  clc
+  adc __rc6                     ; A = C_SIZE_MULT + READ_BL_LEN
+  sec
+  sbc #7                        ; A = C_SIZE_MULT + READ_BL_LEN - 7
+  beq .Lsd_get_size_shift_done
+;
+  tax
+.Lsd_get_size_shift:
+  asl __rc4
+  rol __rc5
+  rol __rc2
+  rol __rc3
+  dex
+  bne .Lsd_get_size_shift
+;
+.Lsd_get_size_shift_done:
+  lda __rc4
+  ldx __rc5
+  rts
