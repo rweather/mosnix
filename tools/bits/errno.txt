@@ -2,13 +2,13 @@
 # Must be in strict ascending order with no gaps between the values.
 # Rare and unused errors are displayed as "EXXX" to save memory.
 #
-EPERM           |  1|Operation not permitted
+EPERM           |  1|Not permitted|Operation not permitted
 ENOENT          |  2|No such file or directory
 ESRCH           |  3|No such process
-EINTR           |  4|Interrupted system call
+EINTR           |  4|EINTR|Interrupted system call
 EIO             |  5|I/O error
-ENXIO           |  6|No such device or address
-E2BIG           |  7|Argument list too long
+ENXIO           |  6|No such device|No such device or address
+E2BIG           |  7|Arg list too long|Argument list too long
 ENOEXEC         |  8|Exec format error
 EBADF           |  9|Bad file number
 ECHILD          | 10|No child processes
@@ -17,7 +17,7 @@ ENOMEM          | 12|Out of memory
 EACCES          | 13|Permission denied
 EFAULT          | 14|Bad address
 ENOTBLK         | 15|Block device required
-EBUSY           | 16|Device or resource busy
+EBUSY           | 16|Busy|Device or resource busy
 EEXIST          | 17|File exists
 EXDEV           | 18|EXDEV|Cross-device link
 ENODEV          | 19|No such device
@@ -26,20 +26,20 @@ EISDIR          | 21|Is a directory
 EINVAL          | 22|Invalid argument
 ENFILE          | 23|File table overflow
 EMFILE          | 24|Too many open files
-ENOTTY          | 25|Not a typewriter
+ENOTTY          | 25|ENOTTY|Not a typewriter
 ETXTBSY         | 26|ETXTBSY|Text file busy
 EFBIG           | 27|File too large
-ENOSPC          | 28|No space left on device
-ESPIPE          | 29|Illegal seek
-EROFS           | 30|Read-only file system
+ENOSPC          | 28|No space left|No space left on device
+ESPIPE          | 29|ESPIPE|Illegal seek
+EROFS           | 30|Read-only|Read-only file system
 EMLINK          | 31|EMLINK|Too many links
 EPIPE           | 32|EPIPE|Broken pipe
 EDOM            | 33|EDOM|Math argument out of domain of func
 ERANGE          | 34|ERANGE|Math result not representable
 EDEADLK		| 35|EDEADLK|Resource deadlock would occur
-ENAMETOOLONG	| 36|File name too long
+ENAMETOOLONG	| 36|Name too long|File name too long
 ENOLCK		| 37|ENOLCK|No record locks available
-ENOSYS		| 38|Invalid system call
+ENOSYS		| 38|Bad syscall|Invalid system call
 ENOTEMPTY	| 39|Directory not empty
 ELOOP		| 40|ELOOP|Too many symbolic links encountered
 EWOULDBLOCK	|EAGAIN|Operation would block
