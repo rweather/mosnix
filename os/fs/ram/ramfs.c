@@ -171,7 +171,7 @@ static struct file_operations const ramfs_dir_operations = {
     .close = file_close_default,
     .read = ramfs_dir_read,
     .write = file_write_default,
-    .lseek = file_lseek_default,
+    file_op_lseek_default
     .ioctl = file_ioctl_default
 };
 

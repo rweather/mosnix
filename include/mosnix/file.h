@@ -86,6 +86,7 @@ struct file_operations
      */
     ssize_t (*write)(struct file *file, const void *data, size_t len);
 
+#if CONFIG_LSEEK
     /**
      * @brief Seeks within a file.
      *
@@ -96,6 +97,7 @@ struct file_operations
      * @return The new position in the file, or a negative error code.
      */
     off_t (*lseek)(struct file *file, off_t offset, int whence);
+#endif
 
     /**
      * @brief Performs an I/O control operation on a file descriptor.
@@ -240,6 +242,8 @@ ssize_t file_read_default(struct file *file, void *data, size_t size);
  */
 ssize_t file_write_default(struct file *file, const void *data, size_t size);
 
+#if CONFIG_LSEEK
+
 /**
  * @brief Default seek function for a file descriptor.
  *
@@ -250,6 +254,21 @@ ssize_t file_write_default(struct file *file, const void *data, size_t size);
  * @return Always fails with -ESPIPE, indicating that seeking is disallowed.
  */
 off_t file_lseek_default(struct file *file, off_t offset, int whence);
+
+/**
+ * @brief Output a reference to the default lseek handler.
+ *
+ * Expands to nothing if lseek support has been disabled in the kernel.
+ */
+#define file_op_lseek_default .lseek = file_lseek_default,
+
+#else
+
+/* Disable the default lseek handler */
+#define file_lseek_default NULL
+#define file_op_lseek_default
+
+#endif
 
 /**
  * @brief Default I/O control operation on a file descriptor.

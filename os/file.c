@@ -10,6 +10,7 @@
 #include <mosnix/file.h>
 #include <mosnix/inode.h>
 #include <mosnix/proc.h>
+#include <mosnix/config.h>
 #include <bits/fcntl.h>
 #include <errno.h>
 
@@ -178,6 +179,8 @@ int sys_write(struct sys_write_s *args)
     return result;
 }
 
+#if CONFIG_LSEEK
+
 int sys_lseek(struct sys_lseek_s *args)
 {
     off_t result;
@@ -202,6 +205,16 @@ int sys_lseek(struct sys_lseek_s *args)
     file_deref(file);
     return (result < 0) ? (int)result : 0;
 }
+
+#else /* !CONFIG_LSEEK */
+
+int sys_lseek(struct sys_lseek_s *args)
+{
+    (void)args;
+    return -ESPIPE;
+}
+
+#endif /* !CONFIG_LSEEK */
 
 static int sys_dup_scan(int oldfd, int newfd)
 {
@@ -339,6 +352,8 @@ ssize_t file_write_default(struct file *file, const void *data, size_t size)
     return -EINVAL;
 }
 
+#if CONFIG_LSEEK
+
 off_t file_lseek_default(struct file *file, off_t offset, int whence)
 {
     (void)file;
@@ -346,6 +361,8 @@ off_t file_lseek_default(struct file *file, off_t offset, int whence)
     (void)whence;
     return -ESPIPE;
 }
+
+#endif
 
 int file_ioctl_default(struct file *file, unsigned long request, void *args)
 {

@@ -201,7 +201,7 @@ static struct file_operations const fatfs_dir_operations = {
     .close = fatfs_close,
     .read = fatfs_dir_read,
     .write = file_write_default,
-    .lseek = file_lseek_default,
+    file_op_lseek_default
     .ioctl = file_ioctl_default
 };
 
@@ -209,7 +209,7 @@ static struct file_operations const fatfs_file_operations = {
     .close = fatfs_close,
     .read = fatfs_file_read,
     .write = file_write_default,
-    .lseek = file_lseek_default,
+    file_op_lseek_default
     .ioctl = file_ioctl_default
 };
 

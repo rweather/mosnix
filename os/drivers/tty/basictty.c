@@ -116,7 +116,7 @@ static struct file_operations const basic_tty_operations = {
     .close = file_close_default,
     .read = basic_tty_read,
     .write = basic_tty_write,
-    .lseek = file_lseek_default,
+    file_op_lseek_default
     .ioctl = file_ioctl_default
 };
 
@@ -124,7 +124,7 @@ static struct file_operations const raw_tty_operations = {
     .close = file_close_default,
     .read = raw_tty_read,
     .write = raw_tty_write,
-    .lseek = file_lseek_default,
+    file_op_lseek_default
     .ioctl = file_ioctl_default
 };
 

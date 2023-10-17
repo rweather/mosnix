@@ -109,4 +109,12 @@
 #define CONFIG_ACCESS_UID 0
 #endif
 
+/**
+ * @define CONFIG_LSEEK
+ * @brief Define to 1 to allow the use of lseek.
+ */
+#ifndef CONFIG_LSEEK
+#define CONFIG_LSEEK 0
+#endif
+
 #endif
