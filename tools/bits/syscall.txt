@@ -57,5 +57,5 @@
 #
 # Other
 #
-100 |uname%         |int        |struct utsname *buf
+100 |getuname%      |int        |const struct utsname **buf
 101 |strerror%      |char *     |int errnum|>char* result

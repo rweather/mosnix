@@ -111,7 +111,7 @@ void * const SYSCALL_TABLE[128] __attribute__((retain)) = {
     /*  97 */ (void *)sys_notimp,
     /*  98 */ (void *)sys_notimp,
     /*  99 */ (void *)sys_notimp,
-    /* 100 */ (void *)sys_uname,
+    /* 100 */ (void *)sys_getuname,
     /* 101 */ (void *)sys_strerror,
     /* 102 */ (void *)sys_notimp,
     /* 103 */ (void *)sys_notimp,

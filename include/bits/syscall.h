@@ -46,7 +46,7 @@
 #define SYS_getmonotime 80
 #define SYS_getrealtime 81
 #define SYS_setrealtime 82
-#define SYS_uname 100
+#define SYS_getuname 100
 #define SYS_strerror 101
 
 #endif

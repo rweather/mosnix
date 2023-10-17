@@ -8,8 +8,19 @@
 
 #include <sys/utsname.h>
 #include <sys/syscall.h>
+#include <string.h>
+#include <errno.h>
 
 int uname(struct utsname *buf)
 {
-    return syscall(SYS_uname, buf);
+    const struct utsname *buf2;
+    if (!buf) {
+        errno = EFAULT;
+        return -1;
+    } else if (syscall(SYS_getuname, &buf2) == 0) {
+        memcpy(buf, buf2, sizeof(struct utsname));
+        return 0;
+    } else {
+        return -1;
+    }
 }

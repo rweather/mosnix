@@ -23,11 +23,10 @@ static struct utsname const uname_data = {
 #endif
 };
 
-int sys_uname(struct sys_uname_s *args)
+int sys_getuname(struct sys_getuname_s *args)
 {
-    struct utsname *buf = args->buf;
-    if (!buf)
-        return -EFAULT;
-    memcpy(buf, &uname_data, sizeof(uname_data));
+    /* Return a pointer to the uname data to user space where it will
+     * be copied into the buffer that was supplied to uname(). */
+    *(args->buf) = &uname_data;
     return 0;
 }
