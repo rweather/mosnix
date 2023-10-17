@@ -49,7 +49,6 @@ static struct file_operations const dev_null_operations = {
     .read = dev_null_read,
     .write = dev_null_write,
     file_op_lseek_default
-    .ioctl = file_ioctl_default
 };
 
 static struct file_operations const dev_zero_operations = {
@@ -57,7 +56,6 @@ static struct file_operations const dev_zero_operations = {
     .read = dev_zero_read,
     .write = dev_null_write,
     file_op_lseek_default
-    .ioctl = file_ioctl_default
 };
 
 static struct file_operations const dev_full_operations = {
@@ -65,7 +63,6 @@ static struct file_operations const dev_full_operations = {
     .read = dev_zero_read,
     .write = dev_full_write,
     file_op_lseek_default
-    .ioctl = file_ioctl_default
 };
 
 int open_dev_null(struct file *file)

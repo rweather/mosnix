@@ -49,7 +49,7 @@ struct inode;
  * or device category that it belongs to.
  *
  * All members must be supplied.  Nothing can be NULL.  There are default
- * functions like file_write_default(), file_ioctl_default(), etc that
+ * functions like file_write_default(), file_close_default(), etc that
  * can be used to error out unnecessary members.  This means that the
  * system call doesn't have to check if a member is NULL before calling it.
  */
@@ -98,17 +98,6 @@ struct file_operations
      */
     off_t (*lseek)(struct file *file, off_t offset, int whence);
 #endif
-
-    /**
-     * @brief Performs an I/O control operation on a file descriptor.
-     *
-     * @param[in] ioctl The file descriptor to control.
-     * @param[in] request The type of I/O control request to perform.
-     * @param[in] args Points to the variable argument block from user space.
-     *
-     * @return The result of the I/O control operation.
-     */
-    int (*ioctl)(struct file *file, unsigned long request, void *args);
 };
 
 /**
@@ -269,18 +258,6 @@ off_t file_lseek_default(struct file *file, off_t offset, int whence);
 #define file_op_lseek_default
 
 #endif
-
-/**
- * @brief Default I/O control operation on a file descriptor.
- *
- * @param[in] ioctl The file descriptor to control.
- * @param[in] request The type of I/O control request to perform.
- * @param[in] args Points to the variable argument block from user space.
- *
- * @return Always fails with -EINVAL, indicating that the request is
- * not supported by the file descriptor.
- */
-int file_ioctl_default(struct file *file, unsigned long request, void *args);
 
 #ifdef __cplusplus
 }

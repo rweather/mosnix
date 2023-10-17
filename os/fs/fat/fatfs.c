@@ -202,7 +202,6 @@ static struct file_operations const fatfs_dir_operations = {
     .read = fatfs_dir_read,
     .write = file_write_default,
     file_op_lseek_default
-    .ioctl = file_ioctl_default
 };
 
 static struct file_operations const fatfs_file_operations = {
@@ -210,7 +209,6 @@ static struct file_operations const fatfs_file_operations = {
     .read = fatfs_file_read,
     .write = file_write_default,
     file_op_lseek_default
-    .ioctl = file_ioctl_default
 };
 
 static int fatfs_release(struct inode *inode)

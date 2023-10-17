@@ -117,7 +117,6 @@ static struct file_operations const basic_tty_operations = {
     .read = basic_tty_read,
     .write = basic_tty_write,
     file_op_lseek_default
-    .ioctl = file_ioctl_default
 };
 
 static struct file_operations const raw_tty_operations = {
@@ -125,7 +124,6 @@ static struct file_operations const raw_tty_operations = {
     .read = raw_tty_read,
     .write = raw_tty_write,
     file_op_lseek_default
-    .ioctl = file_ioctl_default
 };
 
 int open_dev_tty0(struct file *file)

@@ -172,7 +172,6 @@ static struct file_operations const ramfs_dir_operations = {
     .read = ramfs_dir_read,
     .write = file_write_default,
     file_op_lseek_default
-    .ioctl = file_ioctl_default
 };
 
 static int ramfs_open(struct file *file)

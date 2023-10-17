@@ -363,11 +363,3 @@ off_t file_lseek_default(struct file *file, off_t offset, int whence)
 }
 
 #endif
-
-int file_ioctl_default(struct file *file, unsigned long request, void *args)
-{
-    (void)file;
-    (void)request;
-    (void)args;
-    return -EINVAL;
-}
